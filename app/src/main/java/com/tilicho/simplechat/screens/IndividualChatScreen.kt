@@ -36,15 +36,17 @@ import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
-import com.tilicho.simplechat.Navigation.Screen
 import com.tilicho.simplechat.R
+import com.tilicho.simplechat.navigation.Screen
+import com.tilicho.simplechat.viewmodel.AuthViewModel
 
 @Composable
 fun IndividualChatScreen(
     profileImage: Int = 0,
     name: String = "",
     messages: List<String> = mutableListOf(),
-    navController: NavHostController
+    navController: NavHostController,
+    authViewModel: AuthViewModel
 ) {
     Scaffold(modifier = Modifier.padding(5.dp), topBar = {
         Column() {

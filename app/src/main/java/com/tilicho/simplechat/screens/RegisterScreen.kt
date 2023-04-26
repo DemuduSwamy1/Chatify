@@ -15,8 +15,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.MaterialTheme
@@ -29,6 +31,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Grain
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -45,6 +48,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.LifecycleOwner
 import androidx.navigation.NavController
 import com.tilicho.simplechat.R
 import com.tilicho.simplechat.navigation.Screen
@@ -53,7 +57,11 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.runBlocking
 
 @Composable
-fun RegisterScreen(navController: NavController, context: Context, authViewModel: AuthViewModel) {
+fun RegisterScreen(
+    navController: NavController,
+    context: Context,
+    authViewModel: AuthViewModel,
+    lifecycleOwner: LifecycleOwner) {
     var name by remember {
         mutableStateOf(String())
     }
@@ -69,12 +77,25 @@ fun RegisterScreen(navController: NavController, context: Context, authViewModel
     var isError by remember {
         mutableStateOf(false)
     }
+    var toggle by remember {
+        mutableStateOf(false)
+    }
     var errorMessage by remember {
         mutableStateOf(String())
     }
+    var isRegistrationSuccess by remember {
+        mutableStateOf(false)
+    }
+
     val scope: CoroutineScope = rememberCoroutineScope()
-    val lifeCycleOwner = LocalLifecycleOwner.current
     Scaffold { it ->
+        LaunchedEffect(key1 = true) {
+            if (toggle) {
+                authViewModel.getUserRegistrationStatus.observe(lifecycleOwner) {
+                    isRegistrationSuccess = it
+                }
+            }
+        }
         Column(
             modifier = Modifier
                 .padding(it)
@@ -83,6 +104,7 @@ fun RegisterScreen(navController: NavController, context: Context, authViewModel
         ) {
             Column(
                 modifier = Modifier
+                    .verticalScroll(rememberScrollState())
                     .fillMaxSize()
             ) {
                 Spacer(modifier = Modifier.height(10.dp))
@@ -93,7 +115,8 @@ fun RegisterScreen(navController: NavController, context: Context, authViewModel
                     title = stringResource(id = R.string.user_name),
                     placeHolder = stringResource(id = R.string.name_placeholder),
                     textFieldColour = Color.White,
-                    keyboardType = KeyboardType.Text
+                    keyboardType = KeyboardType.Text,
+                    capitalization = KeyboardCapitalization.Sentences
                 ) {
                     name = it
                 }
@@ -138,32 +161,36 @@ fun RegisterScreen(navController: NavController, context: Context, authViewModel
 
                 Button(
                     onClick = {
-                        navController.navigate(Screen.ChatsScreen.route) {
-                            popUpTo(Screen.RegisterScreen.route) {
-                                inclusive = true
-                            }
-                            if (!authViewModel.checkEmailExists(email)) {
-                                if (validatePasswordFields(password,
-                                        confirmPassword).isNotEmpty()
-                                ) {
-                                    errorMessage = validatePasswordFields(password, confirmPassword)
-                                    isError = true
-                                } else {
-                                    isError = false
-                                    errorMessage = ""
-                                    runBlocking {
-                                        authViewModel.register(email,
-                                            password,
-                                            lifeCycleOwner,
-                                            scope)
-                                    }
-                                    // TODO("Navigate to the chats list screen after registering the user in the firebase")
-                                }
+                        if (!authViewModel.checkEmailExists(email)) {
+                            if (validatePasswordFields(password,
+                                    confirmPassword).isNotEmpty()
+                            ) {
+                                errorMessage = validatePasswordFields(password, confirmPassword)
+                                isError = true
                             } else {
-                                Toast.makeText(context,
-                                    "This Email already exists",
-                                    Toast.LENGTH_LONG).show()
+                                toggle = true
+                                isError = false
+                                errorMessage = ""
+                                runBlocking {
+                                    authViewModel.register(email,
+                                        password,
+                                        name,
+                                        lifecycleOwner,
+                                        scope)
+                                }
+
+                                if (isRegistrationSuccess) {
+                                    navController.navigate(Screen.ChatsScreen.route) {
+                                        popUpTo(Screen.RegisterScreen.route) {
+                                            inclusive = true
+                                        }
+                                    }
+                                }
                             }
+                        } else {
+                            Toast.makeText(context,
+                                "This Email already exists",
+                                Toast.LENGTH_LONG).show()
                         }
                     },
                     modifier = Modifier

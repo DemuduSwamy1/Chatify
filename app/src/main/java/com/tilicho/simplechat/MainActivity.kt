@@ -10,9 +10,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import com.tilicho.simplechat.navigation.Screen
 import com.tilicho.simplechat.navigation.SetUpNavGraph
 import com.tilicho.simplechat.ui.theme.SimpleChatTheme
 import com.tilicho.simplechat.viewmodel.AuthViewModel
@@ -29,23 +31,29 @@ class MainActivity : ComponentActivity() {
             ViewModelProvider.AndroidViewModelFactory.getInstance(application))[AuthViewModel::class.java]
         setContent {
             SimpleChatTheme {
+                val lifecycleOwner = LocalLifecycleOwner.current
                 var uid by remember {
                     mutableStateOf(String())
                 }
                 navController = rememberNavController()
+                SetUpNavGraph(context = this@MainActivity,
+                    navController = navController,
+                    authViewModel = authViewModel,
+                    lifecycleOwner = lifecycleOwner)
 
                 LaunchedEffect(key1 = true) {
                     authViewModel.getUidFromPreferences().collect {
                         uid = it
                     }.toString()
                 }
-                if (uid.isNotEmpty()) {
-                    // TODO("Navigate directly to the chats screen")
+                /*if (uid.isNotEmpty()) {
+                    navController.navigate(Screen.ChatsScreen.route)
                 } else {
                     SetUpNavGraph(context = this@MainActivity,
                         navController = navController,
-                        authViewModel)
-                }
+                        authViewModel = authViewModel,
+                        lifecycleOwner = lifecycleOwner)
+                }*/
             }
         }
     }

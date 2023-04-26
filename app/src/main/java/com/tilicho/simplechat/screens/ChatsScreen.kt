@@ -40,11 +40,12 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.navigation.NavHostController
 import com.tilicho.simplechat.enums.ChatTabs
-import com.tilicho.simplechat.Navigation.Screen
 import com.tilicho.simplechat.R
+import com.tilicho.simplechat.navigation.Screen
+import com.tilicho.simplechat.viewmodel.AuthViewModel
 
 @Composable
-fun ChatsScreen(navController: NavHostController) {
+fun ChatsScreen(navController: NavHostController, authViewModel: AuthViewModel) {
     var setFriendDialog by remember {
         mutableStateOf(false)
     }
@@ -117,7 +118,7 @@ fun ChatsScreen(navController: NavHostController) {
             )
         }
         Spacer(modifier = Modifier.height(15.dp))
-        LazyColumn() {
+        LazyColumn {
             item {
                 for (i in 0..30) {
                     ChatItem(

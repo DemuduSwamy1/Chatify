@@ -28,6 +28,7 @@ class AuthenticationRepository(application: Application) {
     private var userMutableLiveData: MutableLiveData<FirebaseUser>
     private var auth: FirebaseAuth
     private var jsonObject: JSONObject
+    private var isUserRegistered: MutableLiveData<Boolean>
 
     private val PREFERENCES_NAME_USER =  "sample_datastore_prefs"
 
@@ -40,9 +41,15 @@ class AuthenticationRepository(application: Application) {
             return userMutableLiveData
         }
 
+    val getRegistrationStatusMutableLiveData: MutableLiveData<Boolean>
+        get() {
+            return isUserRegistered
+        }
+
     init {
         this.application = application
         userMutableLiveData = MutableLiveData()
+        isUserRegistered = MutableLiveData()
         auth = FirebaseAuth.getInstance()
         jsonObject = JSONObject()
 
@@ -51,20 +58,21 @@ class AuthenticationRepository(application: Application) {
         }
     }
 
-    fun registerUser(email: String, password: String) {
+    fun registerUser(email: String, password: String, name: String) {
         jsonObject.put(Constants.UserAttributes.EMAIL, email)
-        jsonObject.put(Constants.UserAttributes.NAME, "Sravan") // TODO("Change it to username taken from user")
+        jsonObject.put(Constants.UserAttributes.NAME, name)
         auth.createUserWithEmailAndPassword(email, password).addOnCompleteListener { task ->
             if (task.isSuccessful) {
+                isUserRegistered.postValue(true)
                 userMutableLiveData.postValue(auth.currentUser)
             } else {
                 Toast.makeText(application, task.exception?.message, Toast.LENGTH_LONG).show()
             }
         }
-        writeUserData(jsonObject)
+        writeUserDataToFirebase(jsonObject)
     }
 
-    private fun writeUserData(userData: JSONObject) {
+    private fun writeUserDataToFirebase(userData: JSONObject) {
         val userRef: DatabaseReference = FirebaseDatabase.getInstance().reference
         val jsonMap: Map<String, Any> =
             Gson().fromJson(userData.toString(),

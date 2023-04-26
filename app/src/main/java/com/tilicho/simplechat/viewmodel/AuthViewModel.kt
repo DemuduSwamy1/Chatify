@@ -1,9 +1,6 @@
 package com.tilicho.simplechat.viewmodel
 
 import android.app.Application
-import android.content.Context
-import android.content.ContextWrapper
-import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.MutableLiveData
@@ -13,28 +10,31 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 
-class AuthViewModel(private val application: Application) : AndroidViewModel(application) {
+class AuthViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val repository: AuthenticationRepository
-    private val userData: MutableLiveData<FirebaseUser>
+    private val repository: AuthenticationRepository = AuthenticationRepository(application)
+    private val userData: MutableLiveData<FirebaseUser> = repository.getFirebaseUserMutableLiveData
+    private val userRegistrationStatus: MutableLiveData<Boolean> = repository.getRegistrationStatusMutableLiveData
 
     val getUserData: MutableLiveData<FirebaseUser>
         get() {
             return userData
         }
 
-    init {
-        this.repository = AuthenticationRepository(application)
-        this.userData = repository.getFirebaseUserMutableLiveData
-    }
+    val getUserRegistrationStatus: MutableLiveData<Boolean>
+        get() {
+            return userRegistrationStatus
+        }
 
     suspend fun register(
         email: String,
         password: String,
+        name: String,
         lifecycleOwner: LifecycleOwner,
-        scope: CoroutineScope) {
+        scope: CoroutineScope
+    ) {
 
-        repository.registerUser(email, password)
+        repository.registerUser(email, password, name)
 
         userData.observe(lifecycleOwner) {
             scope.launch {
