@@ -5,17 +5,21 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.tilicho.simplechat.screens.SignInScreen
-import com.tilicho.simplechat.screens.SignUpScreen
+import com.tilicho.simplechat.screens.ChatsScreen
+import com.tilicho.simplechat.screens.IndividualChatScreen
+import com.tilicho.simplechat.screens.RegisterScreen
 
 @Composable
 fun SetUpNavGraph(context: Context, navController: NavHostController) {
-    NavHost(navController = navController, startDestination = Screen.SignUpScreen.route) {
-        composable(route = Screen.SignUpScreen.route) {
-            SignUpScreen(navController = navController, context = context)
+    NavHost(navController = navController, startDestination = Screen.RegisterScreen.route) {
+        composable(route = Screen.RegisterScreen.route) {
+            RegisterScreen(navController = navController, context = context)
         }
-        composable(route = Screen.SignInScreen.route) {
-            SignInScreen(context = context)
+        composable(route = Screen.ChatsScreen.route) {
+            ChatsScreen(navController = navController)
+        }
+        composable(route = Screen.IndividualChatScreen.route) {
+            IndividualChatScreen(navController = navController)
         }
     }
 }

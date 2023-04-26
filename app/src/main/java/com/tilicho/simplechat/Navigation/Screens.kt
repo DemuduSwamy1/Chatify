@@ -1,6 +1,7 @@
 package com.tilicho.simplechat.Navigation
 
 sealed class Screen(val route: String) {
-    object SignUpScreen : Screen(route = "sign_up_screen")
-    object SignInScreen : Screen(route = "sign_in_screen")
+    object RegisterScreen : Screen(route = "register_screen")
+    object ChatsScreen : Screen(route = "chats_screen")
+    object IndividualChatScreen : Screen(route = "individual_chat_screen")
 }

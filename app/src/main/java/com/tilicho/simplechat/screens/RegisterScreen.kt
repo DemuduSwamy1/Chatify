@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
@@ -33,7 +34,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
@@ -41,9 +44,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.tilicho.simplechat.Navigation.Screen
+import com.tilicho.simplechat.R
 
 @Composable
-fun SignUpScreen(navController: NavController, context: Context) {
+fun RegisterScreen(navController: NavController, context: Context) {
+    var name by remember {
+        mutableStateOf(String())
+    }
     var email by remember {
         mutableStateOf(String())
     }
@@ -57,7 +64,6 @@ fun SignUpScreen(navController: NavController, context: Context) {
         Column(
             modifier = Modifier
                 .padding(it)
-                .background(Color(0xFF121212))
                 .fillMaxSize()
                 .padding(top = 24.dp, start = 24.dp, end = 24.dp)
         ) {
@@ -66,13 +72,23 @@ fun SignUpScreen(navController: NavController, context: Context) {
                     .fillMaxSize()
             ) {
                 Spacer(modifier = Modifier.height(10.dp))
-                Text(text = "SignUp", fontSize = 32.sp, color = Color(0xdeffffff))
+                Text(fontSize = 32.sp, text = stringResource(id = R.string.register))
                 Spacer(modifier = Modifier.height(23.dp))
 
                 TitleAndEditTextField(
-                    title = "Email",
-                    placeHolder = "Enter your email",
-                    textFieldColour = Color(0xff1d1d1d),
+                    title = stringResource(id = R.string.user_name),
+                    placeHolder = stringResource(id = R.string.name_placeholder),
+                    textFieldColour = Color.White,
+                    keyboardType = KeyboardType.Text
+                ) {
+                    name = it
+                }
+                Spacer(modifier = Modifier.height(25.dp))
+
+                TitleAndEditTextField(
+                    title = stringResource(id = R.string.email),
+                    placeHolder = stringResource(id = R.string.email_placeholder),
+                    textFieldColour = Color.White,
                     keyboardType = KeyboardType.Text
                 ) {
                     email = it
@@ -81,9 +97,9 @@ fun SignUpScreen(navController: NavController, context: Context) {
                 Spacer(modifier = Modifier.height(25.dp))
 
                 TitleAndEditTextField(
-                    title = "Password",
-                    placeHolder = "• • • • • • • • • • ",
-                    textFieldColour = Color(0xff1d1d1d),
+                    title = stringResource(id = R.string.password),
+                    placeHolder = stringResource(id = R.string.hide_password),
+                    textFieldColour = Color.White,
                     keyboardType = KeyboardType.Password
                 ) {
                     password = it
@@ -92,9 +108,9 @@ fun SignUpScreen(navController: NavController, context: Context) {
                 Spacer(modifier = Modifier.height(25.dp))
 
                 TitleAndEditTextField(
-                    title = "Confirm Password",
-                    placeHolder = "• • • • • • • • • • ",
-                    textFieldColour = Color(0xff1d1d1d), keyboardType = KeyboardType.Password
+                    title = stringResource(id = R.string.confirm_password),
+                    placeHolder = stringResource(id = R.string.hide_password),
+                    textFieldColour = Color.White, keyboardType = KeyboardType.Password
                 ) {
                     val value = it
                 }
@@ -103,14 +119,19 @@ fun SignUpScreen(navController: NavController, context: Context) {
 
                 Button(
                     onClick = {
-                        navController.navigate(Screen.SignInScreen.route)
+                        navController.navigate(Screen.ChatsScreen.route){
+                            popUpTo(Screen.RegisterScreen.route){
+                                inclusive = true
+                            }
+                        }
                     },
                     modifier = Modifier
+                        .clip(shape = RoundedCornerShape(10.dp))
                         .fillMaxWidth()
                         .height(48.dp),
-                    colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xff8875ff))
+                    colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xFF49E2A7))
                 ) {
-                    Text(text = "Register", color = Color(0xffffffff), fontSize = 16.sp)
+                    Text(text = stringResource(id = R.string.register), color = Color(0xffffffff), fontSize = 16.sp)
                 }
 
                 Spacer(modifier = Modifier.height(30.dp))
@@ -128,11 +149,11 @@ fun SignUpScreen(navController: NavController, context: Context) {
                         .padding(bottom = 20.dp), horizontalArrangement = Arrangement.Center
                 ) {
                     Text(
-                        text = "Don’t have an account?",
-                        color = Color(0xFF979797),
+                        text = stringResource(id = R.string.donot_have_account),
+                        color = Color.Black,
                         fontSize = 12.sp
                     )
-                    Text(text = "Register", color = Color(0xdeffffff), fontSize = 12.sp)
+                    Text(text = stringResource(id = R.string.register), color = Color(0xFF49E2A7), fontSize = 12.sp)
                 }
 
             }
@@ -149,7 +170,7 @@ fun TitleAndEditTextField(
     capitalization: KeyboardCapitalization = KeyboardCapitalization.None,
     text: (String) -> Unit
 ) {
-    Text(text = title, fontSize = 16.sp, color = Color(0xdeffffff))
+    Text(text = title, fontSize = 16.sp, color = Color.Black)
     Spacer(modifier = Modifier.height(8.dp))
 
     var textFieldValue by remember { mutableStateOf(TextFieldValue("")) }
@@ -158,12 +179,12 @@ fun TitleAndEditTextField(
         textFieldValue = newText
         text.invoke(textFieldValue.text)
     }, modifier = Modifier
+        .clip(shape = RoundedCornerShape(10.dp))
         .fillMaxWidth()
         .height(52.dp)
-        .background(textFieldColour)
-        .border(1.dp, color = Color(0xFF979797)),
+        .background(textFieldColour),
         singleLine = true,
-        colors = TextFieldDefaults.textFieldColors(Color(0xffffffff)),
+        colors = TextFieldDefaults.textFieldColors(Color.Black),
         keyboardOptions = KeyboardOptions(
             keyboardType = keyboardType,
             capitalization = capitalization
