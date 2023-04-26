@@ -1,4 +1,4 @@
-package com.tilicho.simplechat.Navigation
+package com.tilicho.simplechat.navigation
 
 import android.content.Context
 import androidx.compose.runtime.Composable
@@ -23,3 +23,4 @@ fun SetUpNavGraph(context: Context, navController: NavHostController) {
         }
     }
 }
+

@@ -1,4 +1,4 @@
-package com.tilicho.simplechat.Navigation
+package com.tilicho.simplechat.navigation
 
 sealed class Screen(val route: String) {
     object RegisterScreen : Screen(route = "register_screen")
