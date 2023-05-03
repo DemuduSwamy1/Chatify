@@ -36,24 +36,20 @@ class MainActivity : ComponentActivity() {
                     mutableStateOf(String())
                 }
                 navController = rememberNavController()
-                SetUpNavGraph(context = this@MainActivity,
-                    navController = navController,
-                    authViewModel = authViewModel,
-                    lifecycleOwner = lifecycleOwner)
 
                 LaunchedEffect(key1 = true) {
                     authViewModel.getUidFromPreferences().collect {
                         uid = it
                     }.toString()
                 }
-                /*if (uid.isNotEmpty()) {
+                if (uid.isNotEmpty()) {
                     navController.navigate(Screen.ChatsScreen.route)
                 } else {
                     SetUpNavGraph(context = this@MainActivity,
                         navController = navController,
                         authViewModel = authViewModel,
                         lifecycleOwner = lifecycleOwner)
-                }*/
+                }
             }
         }
     }

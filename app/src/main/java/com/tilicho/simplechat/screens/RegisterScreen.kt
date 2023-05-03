@@ -42,7 +42,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
@@ -91,9 +90,7 @@ fun RegisterScreen(
     Scaffold { it ->
         LaunchedEffect(key1 = true) {
             if (toggle) {
-                authViewModel.getUserRegistrationStatus.observe(lifecycleOwner) {
-                    isRegistrationSuccess = it
-                }
+                isRegistrationSuccess = authViewModel.getUserRegistrationStatus
             }
         }
         Column(
@@ -119,6 +116,7 @@ fun RegisterScreen(
                     capitalization = KeyboardCapitalization.Sentences
                 ) {
                     name = it
+                    isError = false
                 }
                 Spacer(modifier = Modifier.height(25.dp))
 
@@ -129,6 +127,7 @@ fun RegisterScreen(
                     keyboardType = KeyboardType.Email
                 ) {
                     email = it
+                    isError = false
                 }
 
                 Spacer(modifier = Modifier.height(25.dp))
@@ -161,14 +160,16 @@ fun RegisterScreen(
 
                 Button(
                     onClick = {
-                        if (!authViewModel.checkEmailExists(email)) {
+                        if (name.isEmpty() || email.isEmpty() || password.isEmpty() || confirmPassword.isEmpty()) {
+                            errorMessage = "Please fill all the details."
+                            isError = true
+                        } else if (!authViewModel.checkEmailExists(email)) {
                             if (validatePasswordFields(password,
                                     confirmPassword).isNotEmpty()
                             ) {
                                 errorMessage = validatePasswordFields(password, confirmPassword)
                                 isError = true
                             } else {
-                                toggle = true
                                 isError = false
                                 errorMessage = ""
                                 runBlocking {
@@ -177,20 +178,21 @@ fun RegisterScreen(
                                         name,
                                         lifecycleOwner,
                                         scope)
-                                }
-
-                                if (isRegistrationSuccess) {
-                                    navController.navigate(Screen.ChatsScreen.route) {
-                                        popUpTo(Screen.RegisterScreen.route) {
-                                            inclusive = true
-                                        }
-                                    }
+                                    toggle = true
                                 }
                             }
                         } else {
                             Toast.makeText(context,
                                 "This Email already exists",
                                 Toast.LENGTH_LONG).show()
+                        }
+
+                        if (isRegistrationSuccess) {
+                            navController.navigate(Screen.ChatsScreen.route) {
+                                popUpTo(Screen.RegisterScreen.route) {
+                                    inclusive = true
+                                }
+                            }
                         }
                     },
                     modifier = Modifier
@@ -221,7 +223,6 @@ fun RegisterScreen(
                         color = Color(0xFF49E2A7),
                         fontSize = 12.sp)
                 }
-
             }
         }
     }

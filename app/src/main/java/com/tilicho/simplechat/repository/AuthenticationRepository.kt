@@ -28,9 +28,11 @@ class AuthenticationRepository(application: Application) {
     private var userMutableLiveData: MutableLiveData<FirebaseUser>
     private var auth: FirebaseAuth
     private var jsonObject: JSONObject
-    private var isUserRegistered: MutableLiveData<Boolean>
+    private var isUserRegistered: Boolean
 
     private val PREFERENCES_NAME_USER =  "sample_datastore_prefs"
+
+    private val userRef: DatabaseReference = FirebaseDatabase.getInstance().reference
 
     private val Context.prefsDataStore by preferencesDataStore(
         name = PREFERENCES_NAME_USER
@@ -41,7 +43,7 @@ class AuthenticationRepository(application: Application) {
             return userMutableLiveData
         }
 
-    val getRegistrationStatusMutableLiveData: MutableLiveData<Boolean>
+    val getRegistrationStatusMutableLiveData: Boolean
         get() {
             return isUserRegistered
         }
@@ -49,7 +51,7 @@ class AuthenticationRepository(application: Application) {
     init {
         this.application = application
         userMutableLiveData = MutableLiveData()
-        isUserRegistered = MutableLiveData()
+        isUserRegistered = false
         auth = FirebaseAuth.getInstance()
         jsonObject = JSONObject()
 
@@ -63,7 +65,7 @@ class AuthenticationRepository(application: Application) {
         jsonObject.put(Constants.UserAttributes.NAME, name)
         auth.createUserWithEmailAndPassword(email, password).addOnCompleteListener { task ->
             if (task.isSuccessful) {
-                isUserRegistered.postValue(true)
+                isUserRegistered = true
                 userMutableLiveData.postValue(auth.currentUser)
             } else {
                 Toast.makeText(application, task.exception?.message, Toast.LENGTH_LONG).show()
@@ -73,7 +75,6 @@ class AuthenticationRepository(application: Application) {
     }
 
     private fun writeUserDataToFirebase(userData: JSONObject) {
-        val userRef: DatabaseReference = FirebaseDatabase.getInstance().reference
         val jsonMap: Map<String, Any> =
             Gson().fromJson(userData.toString(),
                 object : TypeToken<HashMap<String?, Any?>?>() {}.type)

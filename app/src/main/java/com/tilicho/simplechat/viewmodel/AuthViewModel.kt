@@ -14,14 +14,14 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
 
     private val repository: AuthenticationRepository = AuthenticationRepository(application)
     private val userData: MutableLiveData<FirebaseUser> = repository.getFirebaseUserMutableLiveData
-    private val userRegistrationStatus: MutableLiveData<Boolean> = repository.getRegistrationStatusMutableLiveData
+    private val userRegistrationStatus: Boolean = repository.getRegistrationStatusMutableLiveData
 
     val getUserData: MutableLiveData<FirebaseUser>
         get() {
             return userData
         }
 
-    val getUserRegistrationStatus: MutableLiveData<Boolean>
+    val getUserRegistrationStatus: Boolean
         get() {
             return userRegistrationStatus
         }
