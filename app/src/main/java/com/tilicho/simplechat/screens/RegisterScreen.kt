@@ -48,10 +48,13 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.MutableLiveData
 import androidx.navigation.NavController
 import com.tilicho.simplechat.R
+import com.tilicho.simplechat.data.User
 import com.tilicho.simplechat.navigation.Screen
 import com.tilicho.simplechat.viewmodel.AuthViewModel
+import com.tilicho.simplechat.viewmodel.ChatViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.runBlocking
 
@@ -60,7 +63,9 @@ fun RegisterScreen(
     navController: NavController,
     context: Context,
     authViewModel: AuthViewModel,
-    lifecycleOwner: LifecycleOwner) {
+    lifecycleOwner: LifecycleOwner,
+    chatViewModel: ChatViewModel
+) {
     var name by remember {
         mutableStateOf(String())
     }
@@ -84,6 +89,9 @@ fun RegisterScreen(
     }
     var isRegistrationSuccess by remember {
         mutableStateOf(false)
+    }
+    val registeredUsers by remember {
+        mutableStateOf(chatViewModel.getFriendsList())
     }
 
     val scope: CoroutineScope = rememberCoroutineScope()
@@ -161,8 +169,13 @@ fun RegisterScreen(
                 Button(
                     onClick = {
                         if (name.isEmpty() || email.isEmpty() || password.isEmpty() || confirmPassword.isEmpty()) {
-                            errorMessage = "Please fill all the details."
-                            isError = true
+                            if(isAlreadyRegistered(name,lifecycleOwner,registeredUsers)){
+                                errorMessage = "This name is already registered!"
+                                isError = true
+                            }else{
+                                errorMessage = "Please fill all the details."
+                                isError = true
+                            }
                         } else if (!authViewModel.checkEmailExists(email)) {
                             if (validatePasswordFields(password,
                                     confirmPassword).isNotEmpty()
@@ -347,4 +360,23 @@ fun validatePasswordFields(password: String, confirmPassword: String): String {
     } else {
         ""
     }
+}
+
+
+fun isAlreadyRegistered(
+    name: String,
+    lifecycleOwner: LifecycleOwner,
+    registeredUsers: MutableLiveData<MutableList<User>>
+): Boolean {
+    var isregistered = false
+    var friends = mutableListOf<User>()
+    registeredUsers.observe(lifecycleOwner){
+        friends = it
+    }
+    friends.forEach {
+        if(it.name == name){
+           isregistered = true
+        }
+    }
+    return isregistered
 }

@@ -2,6 +2,7 @@ package com.tilicho.simplechat.repository
 
 import android.app.Application
 import android.content.Context
+import android.util.Log
 import android.widget.Toast
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
@@ -79,8 +80,10 @@ class AuthenticationRepository(application: Application) {
             Gson().fromJson(userData.toString(),
                 object : TypeToken<HashMap<String?, Any?>?>() {}.type)
 
+        Log.d("uid_001",auth.currentUser?.uid.toString())
+
         auth.currentUser?.uid?.let {
-            userRef.child(Constants.UserAttributes.USERS).child(it)
+            userRef.child("friends").child(it)
                 .updateChildren(jsonMap)
         }
     }

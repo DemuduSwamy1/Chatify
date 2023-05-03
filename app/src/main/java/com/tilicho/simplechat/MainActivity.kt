@@ -18,17 +18,22 @@ import com.tilicho.simplechat.navigation.Screen
 import com.tilicho.simplechat.navigation.SetUpNavGraph
 import com.tilicho.simplechat.ui.theme.SimpleChatTheme
 import com.tilicho.simplechat.viewmodel.AuthViewModel
+import com.tilicho.simplechat.viewmodel.ChatViewModel
 
 class MainActivity : ComponentActivity() {
     private lateinit var navController: NavHostController
     private lateinit var authViewModel: AuthViewModel
+    private lateinit var chatViewModel: ChatViewModel
 
     @SuppressLint("CoroutineCreationDuringComposition")
     override fun onCreate(savedInstanceState: Bundle?) {
         window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
+        chatViewModel = ChatViewModel(application)
+        authViewModel = ViewModelProvider(
+            this,
+            ViewModelProvider.AndroidViewModelFactory.getInstance(application)
+        )[AuthViewModel::class.java]
         super.onCreate(savedInstanceState)
-        authViewModel = ViewModelProvider(this,
-            ViewModelProvider.AndroidViewModelFactory.getInstance(application))[AuthViewModel::class.java]
         setContent {
             SimpleChatTheme {
                 val lifecycleOwner = LocalLifecycleOwner.current
@@ -36,6 +41,13 @@ class MainActivity : ComponentActivity() {
                     mutableStateOf(String())
                 }
                 navController = rememberNavController()
+                SetUpNavGraph(
+                    context = this@MainActivity,
+                    navController = navController,
+                    authViewModel = authViewModel,
+                    chatViewModel = chatViewModel,
+                    lifecycleOwner = lifecycleOwner
+                )
 
                 LaunchedEffect(key1 = true) {
                     authViewModel.getUidFromPreferences().collect {
@@ -43,12 +55,11 @@ class MainActivity : ComponentActivity() {
                     }.toString()
                 }
                 if (uid.isNotEmpty()) {
-                    navController.navigate(Screen.ChatsScreen.route)
-                } else {
-                    SetUpNavGraph(context = this@MainActivity,
-                        navController = navController,
-                        authViewModel = authViewModel,
-                        lifecycleOwner = lifecycleOwner)
+                    navController.navigate(Screen.ChatsScreen.route) {
+                        popUpTo(Screen.RegisterScreen.route) {
+                            inclusive = true
+                        }
+                    }
                 }
             }
         }

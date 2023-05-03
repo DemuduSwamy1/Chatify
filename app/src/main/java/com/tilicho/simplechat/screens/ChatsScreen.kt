@@ -38,23 +38,36 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import androidx.lifecycle.LifecycleOwner
 import androidx.navigation.NavHostController
 import com.tilicho.simplechat.enums.ChatTabs
 import com.tilicho.simplechat.R
+import com.tilicho.simplechat.data.User
 import com.tilicho.simplechat.navigation.Screen
 import com.tilicho.simplechat.viewmodel.AuthViewModel
+import com.tilicho.simplechat.viewmodel.ChatViewModel
 
 @Composable
-fun ChatsScreen(navController: NavHostController, authViewModel: AuthViewModel) {
+fun ChatsScreen(
+    chatViewModel: ChatViewModel,
+    navController: NavHostController,
+    authViewModel: AuthViewModel,
+    lifecycleOwner: LifecycleOwner,
+) {
     var setFriendDialog by remember {
         mutableStateOf(false)
     }
     var selected by remember {
         mutableStateOf(ChatTabs.CHATS)
     }
+    var friends by remember {
+        mutableStateOf(mutableListOf<User>())
+    }
     if (setFriendDialog) {
-        SelectFriendDialog(navController = navController,friends = mutableListOf(), dialogCallBack = {
+        SelectFriendDialog(navController = navController,friends = friends, dialogCallBack = {
             setFriendDialog = it
+        }, selectedFriend = {
+            chatViewModel.selectedFriend = it
         })
     }
     Column(modifier = Modifier.padding(15.dp)) {
@@ -71,6 +84,9 @@ fun ChatsScreen(navController: NavHostController, authViewModel: AuthViewModel) 
                     .size(30.dp)
                     .clickable {
                         setFriendDialog = true
+                        chatViewModel.getFriendsList().observe(lifecycleOwner) {
+                                friends = it
+                            }
                     }
             )
         }
@@ -166,8 +182,9 @@ fun ChatItem(onClickAction: () -> Unit,image: Int, name: String, lastMsg: String
 @Composable
 fun SelectFriendDialog(
     dialogCallBack: (Boolean) -> Unit,
-    friends: MutableList<String>,
-    navController: NavHostController
+    friends: MutableList<User>,
+    navController: NavHostController,
+    selectedFriend:(String) -> Unit
 ) {
     Dialog(properties = DialogProperties(
         dismissOnBackPress = true,
@@ -190,25 +207,17 @@ fun SelectFriendDialog(
                 fontWeight = FontWeight.Bold
             )
             LazyColumn(modifier = Modifier.padding(20.dp), horizontalAlignment = Alignment.Start) {
-                item {
-                    for (i in 0..30) {
-                        Box(modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable {
-                                navController.navigate(Screen.IndividualChatScreen.route)
-                            }){
-                            Text(text = "My friend")
-                        }
-                        Divider(modifier = Modifier.padding(vertical = 10.dp))
-                        Box(modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable {
-                                navController.navigate(Screen.IndividualChatScreen.route)
-                            }){
-                            Text(text = "Living Legend")
-                        }
-                        Divider(modifier = Modifier.padding(vertical = 10.dp))
+                items(friends.size) { index ->
+                    val user = friends[index]
+                    Box(modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable {
+                            navController.navigate(Screen.IndividualChatScreen.route)
+                            selectedFriend.invoke(user.name)
+                        }) {
+                        Text(text = user.name)
                     }
+                    Divider(modifier = Modifier.padding(vertical = 10.dp))
                 }
             }
         }

@@ -39,6 +39,7 @@ import androidx.navigation.NavHostController
 import com.tilicho.simplechat.R
 import com.tilicho.simplechat.navigation.Screen
 import com.tilicho.simplechat.viewmodel.AuthViewModel
+import com.tilicho.simplechat.viewmodel.ChatViewModel
 
 @Composable
 fun IndividualChatScreen(
@@ -46,7 +47,8 @@ fun IndividualChatScreen(
     name: String = "",
     messages: List<String> = mutableListOf(),
     navController: NavHostController,
-    authViewModel: AuthViewModel
+    authViewModel: AuthViewModel,
+    chatViewModel: ChatViewModel
 ) {
     Scaffold(modifier = Modifier.padding(5.dp), topBar = {
         Column() {
@@ -74,7 +76,7 @@ fun IndividualChatScreen(
                         .size(50.dp)
                 )
                 Spacer(modifier = Modifier.width(15.dp))
-                Text(text = "Bahubali", fontSize = 17.sp, fontWeight = FontWeight.Bold)
+                Text(text = chatViewModel.selectedFriend, fontSize = 17.sp, fontWeight = FontWeight.Bold)
             }
             Divider(modifier = Modifier.padding(vertical = 7.dp))
         }
@@ -108,7 +110,9 @@ fun IndividualChatScreen(
                 maxLines = 4,
                 keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences),
                 trailingIcon = {
-                    Image(imageVector = Icons.Default.Send, contentDescription = null)
+                    Image(imageVector = Icons.Default.Send, contentDescription = null, modifier = Modifier.clickable {
+                        chatViewModel.writeNewChatId()
+                    })
                 }
             )
         }
