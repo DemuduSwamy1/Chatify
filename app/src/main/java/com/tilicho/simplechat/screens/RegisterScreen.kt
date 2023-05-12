@@ -91,7 +91,7 @@ fun RegisterScreen(
         mutableStateOf(false)
     }
     val registeredUsers by remember {
-        mutableStateOf(chatViewModel.getFriendsList())
+        mutableStateOf(chatViewModel.getFriendsList)
     }
 
     val scope: CoroutineScope = rememberCoroutineScope()
@@ -169,13 +169,11 @@ fun RegisterScreen(
                 Button(
                     onClick = {
                         if (name.isEmpty() || email.isEmpty() || password.isEmpty() || confirmPassword.isEmpty()) {
-                            if(isAlreadyRegistered(name,lifecycleOwner,registeredUsers)){
-                                errorMessage = "This name is already registered!"
-                                isError = true
-                            }else{
-                                errorMessage = "Please fill all the details."
-                                isError = true
-                            }
+                            errorMessage = "Please fill all the details."
+                            isError = true
+                        } else if(isAlreadyRegistered(name, lifecycleOwner, registeredUsers)) {
+                            errorMessage = "The user name is already registered!"
+                            isError = true
                         } else if (!authViewModel.checkEmailExists(email)) {
                             if (validatePasswordFields(password,
                                     confirmPassword).isNotEmpty()

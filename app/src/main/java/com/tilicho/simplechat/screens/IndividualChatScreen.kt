@@ -10,18 +10,15 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.Divider
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
-import androidx.compose.material.TextField
-import androidx.compose.material.TextFieldDefaults
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Grain
-import androidx.compose.material.icons.filled.Send
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -30,26 +27,34 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.LifecycleOwner
 import androidx.navigation.NavHostController
 import com.tilicho.simplechat.R
+import com.tilicho.simplechat.data.Message
 import com.tilicho.simplechat.navigation.Screen
 import com.tilicho.simplechat.viewmodel.AuthViewModel
 import com.tilicho.simplechat.viewmodel.ChatViewModel
+import `in`.tilicho.flexchatbox.FlexChatBox
+import `in`.tilicho.flexchatbox.enums.FlexType
 
 @Composable
 fun IndividualChatScreen(
-    profileImage: Int = 0,
-    name: String = "",
-    messages: List<String> = mutableListOf(),
+    lifecycleOwner: LifecycleOwner,
     navController: NavHostController,
     authViewModel: AuthViewModel,
-    chatViewModel: ChatViewModel
+    chatViewModel: ChatViewModel,
 ) {
+    var message by remember {
+        mutableStateOf(Message())
+    }
+    var messages by remember {
+        mutableStateOf(chatViewModel.messages.value)
+    }
     Scaffold(modifier = Modifier.padding(5.dp), topBar = {
         Column() {
             Row(
@@ -60,8 +65,8 @@ fun IndividualChatScreen(
                 Image(
                     imageVector = Icons.Default.ArrowBack,
                     contentDescription = null, modifier = Modifier.clickable {
-                        navController.navigate(Screen.ChatsScreen.route){
-                            popUpTo(Screen.IndividualChatScreen.route){
+                        navController.navigate(Screen.ChatsScreen.route) {
+                            popUpTo(Screen.IndividualChatScreen.route) {
                                 inclusive = true
                             }
                         }
@@ -76,18 +81,43 @@ fun IndividualChatScreen(
                         .size(50.dp)
                 )
                 Spacer(modifier = Modifier.width(15.dp))
-                Text(text = chatViewModel.selectedFriend, fontSize = 17.sp, fontWeight = FontWeight.Bold)
+                Text(
+                    text = chatViewModel.selectedFriend.name,
+                    fontSize = 17.sp,
+                    fontWeight = FontWeight.Bold
+                )
             }
             Divider(modifier = Modifier.padding(vertical = 7.dp))
         }
     }, bottomBar = {
-        var textFieldValue by remember {
-            mutableStateOf("")
-        }
-        Row(modifier = Modifier
-            .padding(horizontal = 12.dp)
-            .fillMaxWidth()) {
-            TextField(
+        Row(
+            modifier = Modifier
+                .padding(horizontal = 5.dp)
+                .fillMaxWidth()
+        ) {
+            Column(
+                modifier = Modifier
+            ) {
+                FlexChatBox(
+                    context = LocalContext.current,
+                    flexType = Pair(FlexType.CAMERA) { callback ->
+
+                    },
+                    textFieldPlaceHolder = stringResource(id = R.string.text_box_placeholder),
+                    onClickSend = { text ->
+                        message = Message(
+                            message = text,
+                            send_by = chatViewModel.getCurrentUser.value?.uid.toString(),
+                            System.currentTimeMillis().toString()
+                        )
+                        chatViewModel.addMsgToChatId(
+                            selectedFriend = chatViewModel.selectedFriend,
+                            message = message
+                        )
+                    }
+                )
+            }
+            /*TextField(
                 value = textFieldValue,
                 onValueChange = {
                     textFieldValue = it
@@ -110,15 +140,34 @@ fun IndividualChatScreen(
                 maxLines = 4,
                 keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences),
                 trailingIcon = {
-                    Image(imageVector = Icons.Default.Send, contentDescription = null, modifier = Modifier.clickable {
-                        chatViewModel.writeNewChatId()
-                    })
+                        Image(
+                        imageVector = Icons.Default.Send,
+                        contentDescription = null,
+                        modifier = Modifier.clickable {
+                            message = Message(
+                                message = textFieldValue,
+                                send_by = chatViewModel.getCurrentUser.value?.uid.toString(),
+                                System.currentTimeMillis().toString()
+                            )
+                            chatViewModel.addMsgToChatId(
+                                selectedFriend = chatViewModel.selectedFriend,
+                                message = message
+                            )
+                            textFieldValue = ""
+                        })
                 }
-            )
+            )*/
         }
     }) {
         Column(modifier = Modifier.padding(it)) {
-
+            LazyColumn{
+                messages?.size?.let { it1 ->
+                    items(it1){ index->
+                        val message = messages!![index]
+                        Text(text = message.message, modifier = Modifier.padding(10.dp))
+                    }
+                }
+            }
         }
     }
 }

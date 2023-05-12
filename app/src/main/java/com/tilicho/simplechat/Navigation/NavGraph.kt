@@ -22,17 +22,29 @@ fun SetUpNavGraph(
 ) {
     NavHost(navController = navController, startDestination = Screen.RegisterScreen.route) {
         composable(route = Screen.RegisterScreen.route) {
-            RegisterScreen(navController = navController,
+            RegisterScreen(
+                navController = navController,
                 context = context,
                 authViewModel = authViewModel,
                 lifecycleOwner = lifecycleOwner,
-                chatViewModel = chatViewModel)
+                chatViewModel = chatViewModel
+            )
         }
         composable(route = Screen.ChatsScreen.route) {
-            ChatsScreen(authViewModel = authViewModel,chatViewModel = chatViewModel,navController = navController,lifecycleOwner = lifecycleOwner,)
+            ChatsScreen(
+                authViewModel = authViewModel,
+                chatViewModel = chatViewModel,
+                navController = navController,
+                lifecycleOwner = lifecycleOwner,
+            )
         }
         composable(route = Screen.IndividualChatScreen.route) {
-            IndividualChatScreen(navController = navController, authViewModel = authViewModel, chatViewModel = chatViewModel)
+            IndividualChatScreen(
+                lifecycleOwner = lifecycleOwner,
+                navController = navController,
+                authViewModel = authViewModel,
+                chatViewModel = chatViewModel
+            )
         }
     }
 }

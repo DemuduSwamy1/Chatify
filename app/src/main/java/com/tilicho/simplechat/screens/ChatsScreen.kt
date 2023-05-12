@@ -1,5 +1,7 @@
 package com.tilicho.simplechat.screens
 
+import android.annotation.SuppressLint
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -40,13 +42,14 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.LifecycleOwner
 import androidx.navigation.NavHostController
-import com.tilicho.simplechat.enums.ChatTabs
 import com.tilicho.simplechat.R
 import com.tilicho.simplechat.data.User
+import com.tilicho.simplechat.enums.ChatTabs
 import com.tilicho.simplechat.navigation.Screen
 import com.tilicho.simplechat.viewmodel.AuthViewModel
 import com.tilicho.simplechat.viewmodel.ChatViewModel
 
+@SuppressLint("MutableCollectionMutableState")
 @Composable
 fun ChatsScreen(
     chatViewModel: ChatViewModel,
@@ -63,11 +66,14 @@ fun ChatsScreen(
     var friends by remember {
         mutableStateOf(mutableListOf<User>())
     }
+
     if (setFriendDialog) {
-        SelectFriendDialog(navController = navController,friends = friends, dialogCallBack = {
+        SelectFriendDialog(navController = navController, friends = friends, dialogCallBack = {
             setFriendDialog = it
         }, selectedFriend = {
             chatViewModel.selectedFriend = it
+            chatViewModel.createNewChat(it)
+            Log.d("chat_creation", it.toString())
         })
     }
     Column(modifier = Modifier.padding(15.dp)) {
@@ -84,7 +90,9 @@ fun ChatsScreen(
                     .size(30.dp)
                     .clickable {
                         setFriendDialog = true
-                        chatViewModel.getFriendsList().observe(lifecycleOwner) {
+                        chatViewModel
+                            .getFriendsList
+                            .observe(lifecycleOwner) {
                                 friends = it
                             }
                     }
@@ -99,7 +107,7 @@ fun ChatsScreen(
             Text(
                 text = stringResource(id = R.string.chats),
                 fontWeight = FontWeight.Bold,
-                color = if(selected == ChatTabs.CHATS)Color(0xFF07DC8A) else Color.Black,
+                color = if (selected == ChatTabs.CHATS) Color(0xFF07DC8A) else Color.Black,
                 fontSize = 18.sp,
                 modifier = Modifier.clickable {
                     selected = ChatTabs.CHATS
@@ -108,7 +116,7 @@ fun ChatsScreen(
             Text(
                 text = stringResource(id = R.string.groups),
                 fontWeight = FontWeight.Bold,
-                color = if(selected == ChatTabs.GROUPS)Color(0xFF07DC8A) else Color.Black,
+                color = if (selected == ChatTabs.GROUPS) Color(0xFF07DC8A) else Color.Black,
                 fontSize = 18.sp,
                 modifier = Modifier.clickable {
                     selected = ChatTabs.GROUPS
@@ -117,7 +125,7 @@ fun ChatsScreen(
             Text(
                 text = stringResource(id = R.string.status),
                 fontWeight = FontWeight.Bold,
-                color = if(selected == ChatTabs.STATUS)Color(0xFF07DC8A) else Color.Black,
+                color = if (selected == ChatTabs.STATUS) Color(0xFF07DC8A) else Color.Black,
                 fontSize = 18.sp,
                 modifier = Modifier.clickable {
                     selected = ChatTabs.STATUS
@@ -125,7 +133,7 @@ fun ChatsScreen(
             )
             Text(
                 text = stringResource(id = R.string.calls),
-                color = if(selected == ChatTabs.CALLS)Color(0xFF07DC8A) else Color.Black,
+                color = if (selected == ChatTabs.CALLS) Color(0xFF07DC8A) else Color.Black,
                 fontWeight = FontWeight.Bold,
                 fontSize = 18.sp,
                 modifier = Modifier.clickable {
@@ -135,15 +143,18 @@ fun ChatsScreen(
         }
         Spacer(modifier = Modifier.height(15.dp))
         LazyColumn {
-            item {
-                for (i in 0..30) {
+            val myChatFriends = chatViewModel.getMyChatFriendsInfo.value
+            if (myChatFriends != null) {
+                items(myChatFriends.size) { index ->
+                    val item = myChatFriends[index]
                     ChatItem(
                         image = R.drawable.ic_launcher_background,
-                        name = "Ali Tahir",
+                        name = item.name,
                         lastMsg = "maciej.kowalski@email.com",
                         time = "10:43 AM", onClickAction = {
+                            chatViewModel.selectedFriend = item
+                            Log.d("messages_001",chatViewModel.getMessages(item.uid).toString())
                             navController.navigate(Screen.IndividualChatScreen.route)
-
                         }
                     )
                 }
@@ -153,7 +164,7 @@ fun ChatsScreen(
 }
 
 @Composable
-fun ChatItem(onClickAction: () -> Unit,image: Int, name: String, lastMsg: String, time: String) {
+fun ChatItem(onClickAction: () -> Unit, image: Int, name: String, lastMsg: String, time: String) {
     Box(modifier = Modifier
         .fillMaxWidth()
         .clickable {
@@ -184,7 +195,7 @@ fun SelectFriendDialog(
     dialogCallBack: (Boolean) -> Unit,
     friends: MutableList<User>,
     navController: NavHostController,
-    selectedFriend:(String) -> Unit
+    selectedFriend: (User) -> Unit
 ) {
     Dialog(properties = DialogProperties(
         dismissOnBackPress = true,
@@ -213,7 +224,7 @@ fun SelectFriendDialog(
                         .fillMaxWidth()
                         .clickable {
                             navController.navigate(Screen.IndividualChatScreen.route)
-                            selectedFriend.invoke(user.name)
+                            selectedFriend.invoke(user)
                         }) {
                         Text(text = user.name)
                     }

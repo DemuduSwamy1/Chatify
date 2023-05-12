@@ -28,7 +28,7 @@ class MainActivity : ComponentActivity() {
     @SuppressLint("CoroutineCreationDuringComposition")
     override fun onCreate(savedInstanceState: Bundle?) {
         window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
-        chatViewModel = ChatViewModel(application)
+
         authViewModel = ViewModelProvider(
             this,
             ViewModelProvider.AndroidViewModelFactory.getInstance(application)
@@ -37,6 +37,12 @@ class MainActivity : ComponentActivity() {
         setContent {
             SimpleChatTheme {
                 val lifecycleOwner = LocalLifecycleOwner.current
+                chatViewModel = ChatViewModel(application = application, lifecycleOwner = lifecycleOwner)
+                /*chatViewModel = ViewModelProvider(
+                    this,
+                    ViewModelProvider.AndroidViewModelFactory.getInstance(application)
+                )[ChatViewModel::class.java]*/
+
                 var uid by remember {
                     mutableStateOf(String())
                 }

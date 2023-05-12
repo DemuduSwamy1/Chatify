@@ -7,5 +7,6 @@ class Constants {
         const val EMAIL = "email_id"
         const val UID = "uid"
         const val CHATS = "chats"
+        const val MESSAGES = "messages"
     }
 }

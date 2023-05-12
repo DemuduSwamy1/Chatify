@@ -1,6 +1,7 @@
 package com.tilicho.simplechat.repository
 
 import android.app.Application
+import android.content.ContentValues.TAG
 import android.content.Context
 import android.util.Log
 import android.widget.Toast
@@ -10,16 +11,21 @@ import androidx.datastore.preferences.preferencesDataStore
 import androidx.lifecycle.MutableLiveData
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
+import com.google.firebase.auth.UserProfileChangeRequest
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.tilicho.simplechat.constants.Constants
+import com.tilicho.simplechat.data.User
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import org.json.JSONObject
 
+
 class AuthenticationRepository(application: Application) {
+
+    var currentUser: MutableLiveData<User> = MutableLiveData(User())
 
     object PreferenceKeys {
         val uid = stringPreferencesKey(Constants.UserAttributes.UID)
@@ -68,11 +74,12 @@ class AuthenticationRepository(application: Application) {
             if (task.isSuccessful) {
                 isUserRegistered = true
                 userMutableLiveData.postValue(auth.currentUser)
+                jsonObject.put(Constants.UserAttributes.UID, auth.currentUser?.uid)
+                writeUserDataToFirebase(jsonObject)
             } else {
                 Toast.makeText(application, task.exception?.message, Toast.LENGTH_LONG).show()
             }
         }
-        writeUserDataToFirebase(jsonObject)
     }
 
     private fun writeUserDataToFirebase(userData: JSONObject) {
@@ -80,10 +87,8 @@ class AuthenticationRepository(application: Application) {
             Gson().fromJson(userData.toString(),
                 object : TypeToken<HashMap<String?, Any?>?>() {}.type)
 
-        Log.d("uid_001",auth.currentUser?.uid.toString())
-
         auth.currentUser?.uid?.let {
-            userRef.child("friends").child(it)
+            userRef.child(Constants.UserAttributes.USERS).child(it)
                 .updateChildren(jsonMap)
         }
     }
