@@ -5,11 +5,11 @@ plugins {
 }
 
 android {
-    namespace 'com.tilicho.simplechat'
+    namespace 'com.tilicho.chatify'
     compileSdk 33
 
     defaultConfig {
-        applicationId "com.tilicho.simplechat"
+        applicationId "com.tilicho.chatify"
         minSdk 24
         targetSdk 33
         versionCode 1
