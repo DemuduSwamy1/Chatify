@@ -1,34 +1,34 @@
 {
   "project_info": {
-    "project_number": "127103628105",
-    "firebase_url": "https://simplechat-6cb3a-default-rtdb.firebaseio.com",
-    "project_id": "simplechat-6cb3a",
-    "storage_bucket": "simplechat-6cb3a.appspot.com"
+    "project_number": "598703748685",
+    "firebase_url": "https://chatify-d8cc0-default-rtdb.firebaseio.com",
+    "project_id": "chatify-d8cc0",
+    "storage_bucket": "chatify-d8cc0.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:127103628105:android:792fbff0eaec1e6cad2098",
+        "mobilesdk_app_id": "1:598703748685:android:15bfd49c4b31e5e5634e04",
         "android_client_info": {
-          "package_name": "com.tilicho.simplechat"
+          "package_name": "com.tilicho.chatify"
         }
       },
       "oauth_client": [
         {
-          "client_id": "127103628105-4r5nd2kq285vl3ui7bpm8dpn0q1ha7ge.apps.googleusercontent.com",
+          "client_id": "598703748685-p2t0cbi44npsvp5hc7qv228ahoeregeu.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyB2BjYSEBuV7LGeIrj8A0el6HBI-Bb8uUM"
+          "current_key": "AIzaSyCKE3B72txTgb_e3X2kODhIUMfclE4ELuo"
         }
       ],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "127103628105-4r5nd2kq285vl3ui7bpm8dpn0q1ha7ge.apps.googleusercontent.com",
+              "client_id": "598703748685-fsane8jqf8ufkmn7so66f9se533l1p0m.apps.googleusercontent.com",
               "client_type": 3
             }
           ]
