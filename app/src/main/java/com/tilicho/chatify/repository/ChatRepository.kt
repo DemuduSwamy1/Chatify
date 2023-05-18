@@ -171,7 +171,6 @@ class ChatRepository(val application: Application, val lifecycleOwner: Lifecycle
                     object : GenericTypeIndicator<HashMap<String, ChatData>>() {}
                 val snapshotOfData = snapshot.getValue(typeIndicator)
                 if (snapshotOfData?.values != null) {
-                    /*chatData.postValue(snapshotOfData.toMutableMap())*/
                     chatData.value = snapshotOfData.toMutableMap()
                     Log.d("chatData_001", chatData.value.toString())
                 }

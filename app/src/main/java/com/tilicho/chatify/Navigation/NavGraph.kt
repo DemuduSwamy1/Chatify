@@ -1,8 +1,9 @@
 package com.tilicho.chatify.navigation
 
 import android.content.Context
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.lifecycle.LifecycleOwner
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -10,9 +11,11 @@ import androidx.navigation.compose.composable
 import com.tilicho.chatify.screens.ChatsScreen
 import com.tilicho.chatify.screens.IndividualChatScreen
 import com.tilicho.chatify.screens.RegisterScreen
+import com.tilicho.chatify.screens.SplashScreen
 import com.tilicho.chatify.viewmodel.AuthViewModel
 import com.tilicho.chatify.viewmodel.ChatViewModel
 
+@RequiresApi(Build.VERSION_CODES.Q)
 @Composable
 fun SetUpNavGraph(
     context: Context,
@@ -21,8 +24,7 @@ fun SetUpNavGraph(
     lifecycleOwner: LifecycleOwner,
     chatViewModel: ChatViewModel
 ) {
-    val lifecycleOwner = LocalLifecycleOwner.current
-    NavHost(navController = navController, startDestination = Screen.RegisterScreen.route) {
+    NavHost(navController = navController, startDestination = Screen.SplashScreen.route) {
         composable(route = Screen.RegisterScreen.route) {
             RegisterScreen(
                 navController = navController,
@@ -46,6 +48,13 @@ fun SetUpNavGraph(
                 navController = navController,
                 authViewModel = authViewModel,
                 chatViewModel = chatViewModel
+            )
+        }
+        composable(route = Screen.SplashScreen.route) {
+            SplashScreen(
+                context = context,
+                authViewModel = authViewModel,
+                navController = navController
             )
         }
     }

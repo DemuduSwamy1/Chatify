@@ -17,17 +17,15 @@ class UserDataStore(private val context: Context) {
         val UID = stringPreferencesKey("UID")
     }
 
-    suspend fun saveToDataStore(email: String, password: String) {
+    suspend fun saveToDataStore(email: String, uid: String) {
         context.dataStore.edit {
             it[EMAIL] = email
-            it[UID] = password
+            it[UID] = uid
         }
     }
 
-    fun getUid(): Flow<String?> {
-        return context.dataStore.data.map {
-            it[UID]
-        }
+    fun getUid(): Flow<String?> = context.dataStore.data.map {
+        it[UID]
     }
 
     fun getEmail(): Flow<String?> {

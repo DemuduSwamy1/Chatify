@@ -4,10 +4,13 @@ import android.annotation.SuppressLint
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -15,8 +18,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Card
 import androidx.compose.material.Divider
 import androidx.compose.material.Scaffold
@@ -33,6 +38,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -43,6 +49,7 @@ import androidx.navigation.NavHostController
 import com.tilicho.chatify.R
 import com.tilicho.chatify.data.Message
 import com.tilicho.chatify.navigation.Screen
+import com.tilicho.chatify.ui.theme.TextBackground
 import com.tilicho.chatify.viewmodel.AuthViewModel
 import com.tilicho.chatify.viewmodel.ChatViewModel
 import `in`.tilicho.flexchatbox.FlexChatBox
@@ -63,14 +70,11 @@ fun IndividualChatScreen(
     val currentUser by remember {
         mutableStateOf(chatViewModel.getCurrentUser?.value?.uid)
     }
-    var selectedUser by remember {
-        mutableStateOf(chatViewModel.selectedFriend.uid)
-    }
     val messages by remember {
         mutableStateOf(chatViewModel.messages.value)
     }
     Scaffold(modifier = Modifier.padding(5.dp), topBar = {
-        Column() {
+        Column {
             Row(
                 verticalAlignment = Alignment.CenterVertically, modifier = Modifier
                     .padding(top = 5.dp)
@@ -104,7 +108,7 @@ fun IndividualChatScreen(
             Divider(modifier = Modifier.padding(vertical = 7.dp))
         }
     }, bottomBar = {
-        Column {
+        Column(modifier = Modifier.padding(top = dimensionResource(id = R.dimen.spacing_00))) {
             FlexChatBox(
                 context = LocalContext.current,
                 flexType = Pair(FlexType.CAMERA) { callback ->
@@ -121,6 +125,17 @@ fun IndividualChatScreen(
                         selectedFriend = chatViewModel.selectedFriend,
                         message = message
                     )
+                    if (text.isNotEmpty()) {
+                        message = Message(
+                            message = text.trim(),
+                            send_by = chatViewModel.getCurrentUser?.value?.uid.toString(),
+                            time = System.currentTimeMillis().toString()
+                        )
+                        chatViewModel.addMsgToChatId(
+                            selectedFriend = chatViewModel.selectedFriend,
+                            message = message
+                        )
+                    }
                 }
             )
         }
@@ -142,7 +157,11 @@ fun IndividualChatScreen(
             }
             sortedMessageIds.sort()
 
-            LazyColumn(verticalArrangement = Arrangement.Bottom) {
+            LazyColumn(
+                contentPadding = PaddingValues(vertical = dimensionResource(id = R.dimen.spacing_10)),
+                verticalArrangement = Arrangement.Bottom,
+                modifier = Modifier.padding(
+                    dimensionResource(id = R.dimen.spacing_10))) {
                 items(sortedMessageIds.size) { index ->
                     val message = sortedMessages[sortedMessageIds[index].toString()]
                     if (message?.send_by == currentUser) {
@@ -152,14 +171,108 @@ fun IndividualChatScreen(
                                 text = message?.message.toString(),
                                 modifier = Modifier.padding(10.dp)
                             )
-                        }
-                    } else {
-                        Card(modifier = Modifier.fillMaxWidth()) {
-                            Text(
-                                textAlign = TextAlign.Start,
-                                text = message?.message.toString(),
-                                modifier = Modifier.padding(10.dp)
-                            )
+                            if (sortedMessages[sortedMessageIds[index]]?.send_by == currentUser) {
+                                if (message?.message?.length!! >= 25) {
+                                    Box(
+                                        contentAlignment = Alignment.BottomStart,
+                                        modifier = Modifier
+                                            .width(dimensionResource(id = R.dimen.chat_text_cell_size))
+                                            .background(
+                                                color = TextBackground,
+                                                shape = RoundedCornerShape(
+                                                    dimensionResource(id = R.dimen.spacing_50),
+                                                    dimensionResource(id = R.dimen.spacing_50),
+                                                    0.dp,
+                                                    dimensionResource(id = R.dimen.spacing_50)
+                                                )
+                                            )
+                                    ) {
+                                        Text(
+                                            text = message.message,
+                                            textAlign = TextAlign.End,
+                                            fontSize = 16.sp,
+                                            modifier = Modifier
+                                                .padding(dimensionResource(id = R.dimen.spacing_10dp)),
+                                            color = Color.Black
+                                        )
+                                    }
+                                } else {
+                                    Box(
+                                        contentAlignment = Alignment.BottomStart,
+                                        modifier = Modifier
+                                            .background(
+                                                color = TextBackground,
+                                                shape = RoundedCornerShape(
+                                                    dimensionResource(id = R.dimen.spacing_50),
+                                                    dimensionResource(id = R.dimen.spacing_50),
+                                                    0.dp,
+                                                    dimensionResource(id = R.dimen.spacing_50)
+                                                )
+                                            )
+                                            .wrapContentWidth()
+                                    ) {
+                                        Text(
+                                            text = message.message,
+                                            textAlign = TextAlign.End,
+                                            fontSize = 16.sp,
+                                            modifier = Modifier
+                                                .padding(dimensionResource(id = R.dimen.spacing_10dp)),
+                                            color = Color.Black
+                                        )
+                                    }
+                                }
+                            } else {
+                                if (message?.message?.length!! >= 25) {
+                                    Box(
+                                        contentAlignment = Alignment.BottomStart,
+                                        modifier = Modifier
+                                            .width(dimensionResource(id = R.dimen.chat_text_cell_size))
+                                            .background(
+                                                color = TextBackground,
+                                                shape = RoundedCornerShape(
+                                                    dimensionResource(id = R.dimen.spacing_50),
+                                                    dimensionResource(id = R.dimen.spacing_50),
+                                                    0.dp,
+                                                    dimensionResource(id = R.dimen.spacing_50)
+                                                )
+                                            )
+                                    ) {
+                                        Text(
+                                            text = message.message,
+                                            textAlign = TextAlign.Start,
+                                            fontSize = 16.sp,
+                                            modifier = Modifier
+                                                .padding(dimensionResource(id = R.dimen.spacing_10dp)),
+                                            color = Color.Black
+                                        )
+                                    }
+                                } else {
+                                    Box(
+                                        contentAlignment = Alignment.BottomStart,
+                                        modifier = Modifier
+                                            .background(
+                                                color = TextBackground,
+                                                shape = RoundedCornerShape(
+                                                    dimensionResource(id = R.dimen.spacing_50),
+                                                    dimensionResource(id = R.dimen.spacing_50),
+                                                    0.dp,
+                                                    dimensionResource(id = R.dimen.spacing_50)
+                                                )
+                                            )
+                                            .wrapContentWidth()
+                                    ) {
+                                        Text(
+                                            text = message.message,
+                                            textAlign = TextAlign.Start,
+                                            fontSize = 16.sp,
+                                            modifier = Modifier
+                                                .padding(dimensionResource(id = R.dimen.spacing_10dp)),
+                                            color = Color.Black
+                                        )
+                                    }
+                                }
+                            }
+
                         }
                     }
                 }

@@ -31,16 +31,13 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
         password: String,
         name: String,
         lifecycleOwner: LifecycleOwner,
-        scope: CoroutineScope
+        scope: CoroutineScope,
+        isUserRegistered: (Boolean) -> Unit
     ) {
 
-        repository.registerUser(email, password, name, scope)
-
-        /*userData.observe(lifecycleOwner) {
-            scope.launch {
-                repository.saveUserUid(it.uid)
-            }
-        }*/
+        repository.registerUser(email, password, name, scope, isUserRegistered = {
+            isUserRegistered(it)
+        })
     }
 
     fun checkEmailExists(email: String): Boolean {
@@ -50,7 +47,4 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
     fun getUidFromPreferences(): Flow<String> {
         return repository.getUserUid()
     }
-
-    fun isAuthnticated() = repository.getUserUid().toString().isNotEmpty()
-
 }

@@ -31,7 +31,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Grain
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -56,7 +55,6 @@ import com.tilicho.chatify.navigation.Screen
 import com.tilicho.chatify.viewmodel.AuthViewModel
 import com.tilicho.chatify.viewmodel.ChatViewModel
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.runBlocking
 
 @Composable
@@ -82,14 +80,8 @@ fun RegisterScreen(
     var isError by remember {
         mutableStateOf(false)
     }
-    var toggle by remember {
-        mutableStateOf(false)
-    }
     var errorMessage by remember {
         mutableStateOf(String())
-    }
-    var isRegistrationSuccess by remember {
-        mutableStateOf(false)
     }
     val registeredUsers by remember {
         mutableStateOf(chatViewModel.getFriendsList)
@@ -98,11 +90,6 @@ fun RegisterScreen(
 
     val scope: CoroutineScope = rememberCoroutineScope()
     Scaffold { it ->
-        LaunchedEffect(key1 = true) {
-            if (toggle) {
-                isRegistrationSuccess = authViewModel.getUserRegistrationStatus
-            }
-        }
         Column(
             modifier = Modifier
                 .padding(it)
@@ -176,6 +163,9 @@ fun RegisterScreen(
                         } else if(isAlreadyRegistered(name = name, lifecycleOwner = lifecycleOwner, registeredUsers = registeredUsers)) {
                             errorMessage = "The user name is already registered!"
                             isError = true
+                        } else if (!isValidEmail(email)) {
+                            errorMessage = "Please enter valid email id."
+                            isError = true
                         } else if (!authViewModel.checkEmailExists(email)) {
                             if (validatePasswordFields(password,
                                     confirmPassword).isNotEmpty()
@@ -190,22 +180,19 @@ fun RegisterScreen(
                                         password,
                                         name,
                                         lifecycleOwner,
-                                        scope)
-                                    toggle = true
+                                        scope, isUserRegistered = {
+                                            navController.navigate(Screen.ChatsScreen.route) {
+                                                popUpTo(Screen.RegisterScreen.route) {
+                                                    inclusive = true
+                                                }
+                                            }
+                                        })
                                 }
                             }
                         } else {
                             Toast.makeText(context,
                                 "This Email already exists",
                                 Toast.LENGTH_LONG).show()
-                        }
-
-                        if (isRegistrationSuccess) {
-                            navController.navigate(Screen.ChatsScreen.route) {
-                                popUpTo(Screen.RegisterScreen.route) {
-                                    inclusive = true
-                                }
-                            }
                         }
                     },
                     modifier = Modifier
@@ -379,4 +366,8 @@ fun isAlreadyRegistered(
         }
     }
     return isregistered
+}
+
+private fun isValidEmail(emailString: String): Boolean {
+    return android.util.Patterns.EMAIL_ADDRESS.matcher(emailString).matches()
 }

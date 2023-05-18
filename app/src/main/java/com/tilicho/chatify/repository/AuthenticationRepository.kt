@@ -3,7 +3,6 @@ package com.tilicho.chatify.repository
 import android.app.Application
 import android.content.Context
 import android.widget.Toast
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
@@ -21,6 +20,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import org.json.JSONObject
 
 
@@ -69,17 +69,19 @@ class AuthenticationRepository(application: Application) {
         }
     }
 
-    fun registerUser(email: String, password: String, name: String, scope: CoroutineScope) {
+    fun registerUser(email: String, password: String, name: String, scope: CoroutineScope, isUserRegistered: (Boolean) -> Unit) {
         jsonObject.put(Constants.UserAttributes.EMAIL, email)
         jsonObject.put(Constants.UserAttributes.NAME, name)
         auth.createUserWithEmailAndPassword(email, password).addOnCompleteListener { task ->
             if (task.isSuccessful) {
-                isUserRegistered = true
                 userMutableLiveData.postValue(auth.currentUser)
                 jsonObject.put(Constants.UserAttributes.UID, auth.currentUser?.uid)
                 auth.currentUser?.uid?.let {
                     scope.launch {
-                        dataStore.saveToDataStore(email, it)
+                        runBlocking {
+                            saveUserUid(it, email)
+                        }
+                        isUserRegistered(true)
                     }
                 }
                 writeUserDataToFirebase(jsonObject)
@@ -108,10 +110,11 @@ class AuthenticationRepository(application: Application) {
         return isEmailAlreadyExists
     }
 
-    suspend fun saveUserUid(uid: String) {
+    private suspend fun saveUserUid(uid: String, email: String) {
         application.prefsDataStore.edit { preferences ->
             preferences[PreferenceKeys.uid] = uid
         }
+//        UserDataStore(application).saveToDataStore(uid = uid, email = email)
     }
 
     fun getUserUid(): Flow<String> {

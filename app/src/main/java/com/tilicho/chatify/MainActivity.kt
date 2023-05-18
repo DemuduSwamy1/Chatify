@@ -1,17 +1,15 @@
 package com.tilicho.chatify
 
+import android.os.Build
 import android.os.Bundle
-import android.util.Log
 import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.mutableStateOf
+import androidx.annotation.RequiresApi
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
-import com.tilicho.chatify.navigation.Screen
 import com.tilicho.chatify.navigation.SetUpNavGraph
 import com.tilicho.chatify.ui.theme.SimpleChatTheme
 import com.tilicho.chatify.viewmodel.AuthViewModel
@@ -22,10 +20,10 @@ class MainActivity : ComponentActivity() {
     private lateinit var authViewModel: AuthViewModel
     private lateinit var chatViewModel: ChatViewModel
 
+    @RequiresApi(Build.VERSION_CODES.Q)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
-        val uid = mutableStateOf(String())
 
         authViewModel = ViewModelProvider(
             this,
@@ -34,7 +32,6 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             SimpleChatTheme {
-                Log.d("setcontent_001", "true")
                 val lifecycleOwner = LocalLifecycleOwner.current
                 chatViewModel =
                     ChatViewModel(application = application, lifecycleOwner = lifecycleOwner)
@@ -43,19 +40,9 @@ class MainActivity : ComponentActivity() {
                     context = this@MainActivity,
                     navController = navController,
                     authViewModel = authViewModel,
-                    chatViewModel = chatViewModel,
-                    lifecycleOwner = lifecycleOwner
+                    lifecycleOwner = lifecycleOwner,
+                    chatViewModel = chatViewModel
                 )
-
-                if (UserDataStore(this).getUid()
-                        .collectAsState(initial = "").value?.isNotEmpty() == true
-                ) {
-                    navController.navigate(Screen.ChatsScreen.route) {
-                        popUpTo(Screen.RegisterScreen.route) {
-                            inclusive = true
-                        }
-                    }
-                }
             }
         }
     }
