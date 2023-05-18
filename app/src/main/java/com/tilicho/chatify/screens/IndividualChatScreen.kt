@@ -2,8 +2,6 @@ package com.tilicho.chatify.screens
 
 import android.annotation.SuppressLint
 import android.os.Build
-import android.text.format.DateFormat
-import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
@@ -62,7 +60,7 @@ fun IndividualChatScreen(
     var message by remember {
         mutableStateOf(Message())
     }
-    var currentUser by remember {
+    val currentUser by remember {
         mutableStateOf(chatViewModel.getCurrentUser?.value?.uid)
     }
     var selectedUser by remember {
@@ -117,9 +115,7 @@ fun IndividualChatScreen(
                     message = Message(
                         message = text,
                         send_by = chatViewModel.getCurrentUser?.value?.uid.toString(),
-                        time = System.currentTimeMillis()
-                        /*convertDate(System.currentTimeMillis().toString(), "hh:mm")*/
-
+                        time = System.currentTimeMillis().toString()
                     )
                     chatViewModel.addMsgToChatId(
                         selectedFriend = chatViewModel.selectedFriend,
@@ -134,15 +130,14 @@ fun IndividualChatScreen(
                 .padding(it)
                 .fillMaxSize(), verticalArrangement = Arrangement.Bottom
         ) {
-            Log.d("original_list", chatViewModel.messages.value.toString())
             val sortedMessages by remember {
-                mutableStateOf(mutableMapOf<String,Message>())
+                mutableStateOf(mutableMapOf<String, Message>())
             }
             val sortedMessageIds by remember {
-                mutableStateOf(mutableListOf<Long   >())
+                mutableStateOf(mutableListOf<String>())
             }
-            messages?.forEach {message->
-                sortedMessages[message.time.toString()] = message
+            messages?.forEach { message ->
+                sortedMessages[message.time] = message
                 sortedMessageIds.add(message.time)
             }
             sortedMessageIds.sort()
@@ -150,7 +145,6 @@ fun IndividualChatScreen(
             LazyColumn(verticalArrangement = Arrangement.Bottom) {
                 items(sortedMessageIds.size) { index ->
                     val message = sortedMessages[sortedMessageIds[index].toString()]
-                    Log.d("message_nvbnvg", sortedMessageIds[index].toString() + ":" + message?.message.toString())
                     if (message?.send_by == currentUser) {
                         Card(modifier = Modifier.fillMaxWidth()) {
                             Text(

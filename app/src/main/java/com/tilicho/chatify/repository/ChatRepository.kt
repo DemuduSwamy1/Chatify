@@ -60,7 +60,6 @@ class ChatRepository(val application: Application, val lifecycleOwner: Lifecycle
                 val snapshotOfData = snapshot.getValue(typeIndicator)
                 if (snapshotOfData?.values != null) {
                     val usersData = snapshotOfData.values.toMutableStateList().toMutableList()
-                    /*registeredFriends.postValue(usersData)*/
                     registeredFriends.value = usersData
                     setCurrentUser()
                     setMyChatFriendsInfo()
@@ -97,9 +96,9 @@ class ChatRepository(val application: Application, val lifecycleOwner: Lifecycle
         }
         auth = FirebaseAuth.getInstance()
         var createNewId = true
-        var tempMyChatIds:MutableList<String> = mutableListOf()
-        myChatIds.observe(lifecycleOwner){
-            tempMyChatIds  = it
+        var tempMyChatIds: MutableList<String> = mutableListOf()
+        myChatIds.observe(lifecycleOwner) {
+            tempMyChatIds = it
         }
         tempMyChatIds.forEach { chatId ->
             if (tempChatData.keys.contains(chatId)) {
@@ -144,9 +143,9 @@ class ChatRepository(val application: Application, val lifecycleOwner: Lifecycle
         chatData.observe(lifecycleOwner) {
             tempChatData = it
         }
-        var tempMyChatIds:MutableList<String> = mutableListOf()
-        myChatIds.observe(lifecycleOwner){
-            tempMyChatIds  = it
+        var tempMyChatIds: MutableList<String> = mutableListOf()
+        myChatIds.observe(lifecycleOwner) {
+            tempMyChatIds = it
         }
         tempMyChatIds.forEach { chatId ->
             if (tempChatData.keys.contains(chatId)) {
@@ -156,6 +155,8 @@ class ChatRepository(val application: Application, val lifecycleOwner: Lifecycle
                         .child(Constants.UserAttributes.MESSAGES)
                         .push()
                         .setValue(message)
+                    firebaseDatabase.child(Constants.UserAttributes.CHATS).child(chatId)
+                        .child("last_message").setValue(message)
                 }
             }
         }
@@ -172,6 +173,7 @@ class ChatRepository(val application: Application, val lifecycleOwner: Lifecycle
                 if (snapshotOfData?.values != null) {
                     /*chatData.postValue(snapshotOfData.toMutableMap())*/
                     chatData.value = snapshotOfData.toMutableMap()
+                    Log.d("chatData_001", chatData.value.toString())
                 }
             }
 
@@ -202,8 +204,8 @@ class ChatRepository(val application: Application, val lifecycleOwner: Lifecycle
             tempChatData = it
         }
         var tempMyChatIds = myChatIds.value
-        myChatIds.observe(lifecycleOwner){
-            tempMyChatIds  = it
+        myChatIds.observe(lifecycleOwner) {
+            tempMyChatIds = it
         }
         tempMyChatIds?.forEach { chatId ->
             if (tempChatData?.keys?.contains(chatId) == true) {
@@ -220,7 +222,6 @@ class ChatRepository(val application: Application, val lifecycleOwner: Lifecycle
                 }
             }
         }
-        Log.d("chat_info_002.1",myChatFriendsDetails.value.toString())
     }
 
     fun getMessages(uid: String): MutableList<Message> {
@@ -228,9 +229,9 @@ class ChatRepository(val application: Application, val lifecycleOwner: Lifecycle
         chatData.observe(lifecycleOwner) {
             tempChatData = it
         }
-        var tempMyChatIds:MutableList<String> = mutableListOf()
-        myChatIds.observe(lifecycleOwner){
-            tempMyChatIds  = it
+        var tempMyChatIds: MutableList<String> = mutableListOf()
+        myChatIds.observe(lifecycleOwner) {
+            tempMyChatIds = it
         }
         var messages = mutableListOf<Message>()
         tempMyChatIds.forEach { id ->
@@ -240,6 +241,27 @@ class ChatRepository(val application: Application, val lifecycleOwner: Lifecycle
             }
         }
         return messages
+    }
+
+    fun getLastMessage(uid: String): Message {
+        var tempChatData: MutableMap<String, ChatData> = mutableMapOf()
+        chatData.observe(lifecycleOwner) {
+            tempChatData = it
+        }
+        var tempMyChatIds: MutableList<String> = mutableListOf()
+        myChatIds.observe(lifecycleOwner) {
+            tempMyChatIds = it
+        }
+        var message = Message()
+        tempMyChatIds.forEach { id ->
+            if (tempChatData.keys.contains(id)) {
+                val chatData = tempChatData.getValue(id)
+                if (chatData.chat_pair.values.contains(uid)) {
+                    message = chatData.last_message
+                }
+            }
+        }
+        return message
     }
 }
 

@@ -61,4 +61,10 @@ class ChatViewModel(lifecycleOwner: LifecycleOwner?, application: Application) :
     fun getMessages(uid: String) {
         messages.value = repository?.getMessages(uid = uid)
     }
+
+    fun getLastMessage(uid: String): Message? {
+        return repository?.getLastMessage(uid)
+    }
+
+
 }

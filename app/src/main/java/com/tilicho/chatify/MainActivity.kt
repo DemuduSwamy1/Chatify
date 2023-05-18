@@ -36,8 +36,6 @@ class MainActivity : ComponentActivity() {
             SimpleChatTheme {
                 Log.d("setcontent_001", "true")
                 val lifecycleOwner = LocalLifecycleOwner.current
-                /*val isUserRegistered = UserDataStore(this).getUid().collectAsState(initial = "").value*/
-
                 chatViewModel =
                     ChatViewModel(application = application, lifecycleOwner = lifecycleOwner)
                 navController = rememberNavController()

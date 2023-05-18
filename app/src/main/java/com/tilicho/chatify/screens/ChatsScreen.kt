@@ -69,18 +69,22 @@ fun ChatsScreen(
     var myChatFriends by remember {
         mutableStateOf(mutableListOf<User>())
     }
-    chatViewModel.getMyChatFriendsInfo?.observe(lifecycleOwner){
+    chatViewModel.getMyChatFriendsInfo?.observe(lifecycleOwner) {
         myChatFriends = it
-        Log.d("myChat_info",myChatFriends.toString())
     }
 
     if (setFriendDialog) {
-        SelectFriendDialog(navController = navController, friends = friends, dialogCallBack = {
-            setFriendDialog = it
-        }, selectedFriend = {
-            chatViewModel.selectedFriend = it
-            chatViewModel.createNewChat(it)
-        })
+        SelectFriendDialog(
+            chatViewModel = chatViewModel,
+            navController = navController,
+            friends = friends,
+            dialogCallBack = {
+                setFriendDialog = it
+            },
+            selectedFriend = {
+                chatViewModel.selectedFriend = it
+                chatViewModel.createNewChat(it)
+            })
     }
     Column(modifier = Modifier.padding(15.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -140,9 +144,10 @@ fun ChatsScreen(
         LazyColumn {
             items(myChatFriends.size) { index ->
                 val item = myChatFriends[index]
+                val lastMessage = chatViewModel.getLastMessage(item.uid)
                 ChatItem(image = R.drawable.ic_launcher_background,
                     name = item.name,
-                    lastMsg = "maciej.kowalski@email.com",
+                    lastMsg = lastMessage?.message.toString(),
                     time = "10:43 AM",
                     onClickAction = {
                         chatViewModel.selectedFriend = item
@@ -184,6 +189,7 @@ fun ChatItem(onClickAction: () -> Unit, image: Int, name: String, lastMsg: Strin
 
 @Composable
 fun SelectFriendDialog(
+    chatViewModel: ChatViewModel,
     dialogCallBack: (Boolean) -> Unit,
     friends: MutableList<User>,
     navController: NavHostController,
@@ -211,15 +217,17 @@ fun SelectFriendDialog(
             LazyColumn(modifier = Modifier.padding(20.dp), horizontalAlignment = Alignment.Start) {
                 items(friends.size) { index ->
                     val user = friends[index]
-                    Box(modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable {
-                            navController.navigate(Screen.IndividualChatScreen.route)
-                            selectedFriend.invoke(user)
-                        }) {
-                        Text(text = user.name)
+                    if (user.uid != chatViewModel.getCurrentUser?.value?.uid) {
+                        Box(modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable {
+                                navController.navigate(Screen.IndividualChatScreen.route)
+                                selectedFriend.invoke(user)
+                            }) {
+                            Text(text = user.name)
+                        }
+                        Divider(modifier = Modifier.padding(vertical = 10.dp))
                     }
-                    Divider(modifier = Modifier.padding(vertical = 10.dp))
                 }
             }
         }
