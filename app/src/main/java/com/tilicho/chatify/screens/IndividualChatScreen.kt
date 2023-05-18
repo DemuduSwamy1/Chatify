@@ -163,16 +163,16 @@ fun IndividualChatScreen(
                 modifier = Modifier.padding(
                     dimensionResource(id = R.dimen.spacing_10))) {
                 items(sortedMessageIds.size) { index ->
-                    val message = sortedMessages[sortedMessageIds[index].toString()]
-                    if (message?.send_by == currentUser) {
+                    val _message = sortedMessages[sortedMessageIds[index]]
+                    if (_message?.send_by == currentUser) {
                         Card(modifier = Modifier.fillMaxWidth()) {
                             Text(
                                 textAlign = TextAlign.End,
-                                text = message?.message.toString(),
+                                text = _message?.message.toString(),
                                 modifier = Modifier.padding(10.dp)
                             )
                             if (sortedMessages[sortedMessageIds[index]]?.send_by == currentUser) {
-                                if (message?.message?.length!! >= 25) {
+                                if (_message?.message?.length!! >= 25) {
                                     Box(
                                         contentAlignment = Alignment.BottomStart,
                                         modifier = Modifier
@@ -188,7 +188,7 @@ fun IndividualChatScreen(
                                             )
                                     ) {
                                         Text(
-                                            text = message.message,
+                                            text = _message.message,
                                             textAlign = TextAlign.End,
                                             fontSize = 16.sp,
                                             modifier = Modifier
@@ -212,7 +212,7 @@ fun IndividualChatScreen(
                                             .wrapContentWidth()
                                     ) {
                                         Text(
-                                            text = message.message,
+                                            text = _message.message,
                                             textAlign = TextAlign.End,
                                             fontSize = 16.sp,
                                             modifier = Modifier
@@ -222,7 +222,7 @@ fun IndividualChatScreen(
                                     }
                                 }
                             } else {
-                                if (message?.message?.length!! >= 25) {
+                                if (_message?.message?.length!! >= 25) {
                                     Box(
                                         contentAlignment = Alignment.BottomStart,
                                         modifier = Modifier
@@ -238,7 +238,7 @@ fun IndividualChatScreen(
                                             )
                                     ) {
                                         Text(
-                                            text = message.message,
+                                            text = _message.message,
                                             textAlign = TextAlign.Start,
                                             fontSize = 16.sp,
                                             modifier = Modifier
@@ -262,7 +262,7 @@ fun IndividualChatScreen(
                                             .wrapContentWidth()
                                     ) {
                                         Text(
-                                            text = message.message,
+                                            text = _message.message,
                                             textAlign = TextAlign.Start,
                                             fontSize = 16.sp,
                                             modifier = Modifier
