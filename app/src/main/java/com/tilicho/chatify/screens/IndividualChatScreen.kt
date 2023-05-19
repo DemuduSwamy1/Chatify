@@ -10,11 +10,11 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -22,7 +22,6 @@ import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Card
 import androidx.compose.material.Divider
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
@@ -41,7 +40,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.LifecycleOwner
@@ -111,20 +109,10 @@ fun IndividualChatScreen(
         Column(modifier = Modifier.padding(top = dimensionResource(id = R.dimen.spacing_00))) {
             FlexChatBox(
                 context = LocalContext.current,
-                flexType = Pair(FlexType.CAMERA) { callback ->
-
+                flexType = Pair(FlexType.CAMERA) {
                 },
                 textFieldPlaceHolder = stringResource(id = R.string.text_box_placeholder),
                 onClickSend = { text ->
-                    message = Message(
-                        message = text,
-                        send_by = chatViewModel.getCurrentUser?.value?.uid.toString(),
-                        time = System.currentTimeMillis().toString()
-                    )
-                    chatViewModel.addMsgToChatId(
-                        selectedFriend = chatViewModel.selectedFriend,
-                        message = message
-                    )
                     if (text.isNotEmpty()) {
                         message = Message(
                             message = text.trim(),
@@ -158,125 +146,129 @@ fun IndividualChatScreen(
             sortedMessageIds.sort()
 
             LazyColumn(
-                contentPadding = PaddingValues(vertical = dimensionResource(id = R.dimen.spacing_10)),
                 verticalArrangement = Arrangement.Bottom,
-                modifier = Modifier.padding(
-                    dimensionResource(id = R.dimen.spacing_10))) {
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(
+                        dimensionResource(id = R.dimen.spacing_10))) {
                 items(sortedMessageIds.size) { index ->
                     val _message = sortedMessages[sortedMessageIds[index]]
-                    if (_message?.send_by == currentUser) {
-                        Card(modifier = Modifier.fillMaxWidth()) {
-                            Text(
-                                textAlign = TextAlign.End,
-                                text = _message?.message.toString(),
-                                modifier = Modifier.padding(10.dp)
-                            )
-                            if (sortedMessages[sortedMessageIds[index]]?.send_by == currentUser) {
-                                if (_message?.message?.length!! >= 25) {
-                                    Box(
-                                        contentAlignment = Alignment.BottomStart,
-                                        modifier = Modifier
-                                            .width(dimensionResource(id = R.dimen.chat_text_cell_size))
-                                            .background(
-                                                color = TextBackground,
-                                                shape = RoundedCornerShape(
-                                                    dimensionResource(id = R.dimen.spacing_50),
-                                                    dimensionResource(id = R.dimen.spacing_50),
-                                                    0.dp,
-                                                    dimensionResource(id = R.dimen.spacing_50)
-                                                )
+                    if (sortedMessages[sortedMessageIds[index]]?.send_by == currentUser) {
+                        if (_message?.message?.length!! >= 25) {
+                            Row(modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.End) {
+                                Box(
+                                    modifier = Modifier
+                                        .width(dimensionResource(id = R.dimen.chat_text_cell_size))
+                                        .background(
+                                            color = TextBackground,
+                                            shape = RoundedCornerShape(
+                                                dimensionResource(id = R.dimen.spacing_50),
+                                                dimensionResource(id = R.dimen.spacing_50),
+                                                0.dp,
+                                                dimensionResource(id = R.dimen.spacing_50)
                                             )
-                                    ) {
-                                        Text(
-                                            text = _message.message,
-                                            textAlign = TextAlign.End,
-                                            fontSize = 16.sp,
-                                            modifier = Modifier
-                                                .padding(dimensionResource(id = R.dimen.spacing_10dp)),
-                                            color = Color.Black
-                                        )
-                                    }
-                                } else {
-                                    Box(
-                                        contentAlignment = Alignment.BottomStart,
+                                        ),
+                                    contentAlignment = Alignment.BottomEnd
+                                ) {
+                                    Text(
+                                        text = _message.message,
+                                        fontSize = 16.sp,
                                         modifier = Modifier
-                                            .background(
-                                                color = TextBackground,
-                                                shape = RoundedCornerShape(
-                                                    dimensionResource(id = R.dimen.spacing_50),
-                                                    dimensionResource(id = R.dimen.spacing_50),
-                                                    0.dp,
-                                                    dimensionResource(id = R.dimen.spacing_50)
-                                                )
-                                            )
-                                            .wrapContentWidth()
-                                    ) {
-                                        Text(
-                                            text = _message.message,
-                                            textAlign = TextAlign.End,
-                                            fontSize = 16.sp,
-                                            modifier = Modifier
-                                                .padding(dimensionResource(id = R.dimen.spacing_10dp)),
-                                            color = Color.Black
-                                        )
-                                    }
-                                }
-                            } else {
-                                if (_message?.message?.length!! >= 25) {
-                                    Box(
-                                        contentAlignment = Alignment.BottomStart,
-                                        modifier = Modifier
-                                            .width(dimensionResource(id = R.dimen.chat_text_cell_size))
-                                            .background(
-                                                color = TextBackground,
-                                                shape = RoundedCornerShape(
-                                                    dimensionResource(id = R.dimen.spacing_50),
-                                                    dimensionResource(id = R.dimen.spacing_50),
-                                                    0.dp,
-                                                    dimensionResource(id = R.dimen.spacing_50)
-                                                )
-                                            )
-                                    ) {
-                                        Text(
-                                            text = _message.message,
-                                            textAlign = TextAlign.Start,
-                                            fontSize = 16.sp,
-                                            modifier = Modifier
-                                                .padding(dimensionResource(id = R.dimen.spacing_10dp)),
-                                            color = Color.Black
-                                        )
-                                    }
-                                } else {
-                                    Box(
-                                        contentAlignment = Alignment.BottomStart,
-                                        modifier = Modifier
-                                            .background(
-                                                color = TextBackground,
-                                                shape = RoundedCornerShape(
-                                                    dimensionResource(id = R.dimen.spacing_50),
-                                                    dimensionResource(id = R.dimen.spacing_50),
-                                                    0.dp,
-                                                    dimensionResource(id = R.dimen.spacing_50)
-                                                )
-                                            )
-                                            .wrapContentWidth()
-                                    ) {
-                                        Text(
-                                            text = _message.message,
-                                            textAlign = TextAlign.Start,
-                                            fontSize = 16.sp,
-                                            modifier = Modifier
-                                                .padding(dimensionResource(id = R.dimen.spacing_10dp)),
-                                            color = Color.Black
-                                        )
-                                    }
+                                            .padding(dimensionResource(id = R.dimen.spacing_10dp)),
+                                        color = Color.Black
+                                    )
                                 }
                             }
-
+                            Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.spacing_10dp)))
+                        } else {
+                            Row(modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.End) {
+                                Box(
+                                    modifier = Modifier
+                                        .background(
+                                            color = TextBackground,
+                                            shape = RoundedCornerShape(
+                                                dimensionResource(id = R.dimen.spacing_50),
+                                                dimensionResource(id = R.dimen.spacing_50),
+                                                0.dp,
+                                                dimensionResource(id = R.dimen.spacing_50)
+                                            )
+                                        )
+                                        .wrapContentWidth(),
+                                    contentAlignment = Alignment.BottomEnd
+                                ) {
+                                    Text(
+                                        text = _message.message,
+                                        fontSize = 16.sp,
+                                        modifier = Modifier
+                                            .padding(dimensionResource(id = R.dimen.spacing_10dp)),
+                                        color = Color.Black
+                                    )
+                                }
+                            }
+                            Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.spacing_10dp)))
+                        }
+                    } else {
+                        if (_message?.message?.length!! >= 25) {
+                            Row(modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.Start) {
+                                Box(
+                                    contentAlignment = Alignment.BottomStart,
+                                    modifier = Modifier
+                                        .width(dimensionResource(id = R.dimen.chat_text_cell_size))
+                                        .background(
+                                            color = TextBackground,
+                                            shape = RoundedCornerShape(
+                                                dimensionResource(id = R.dimen.spacing_50),
+                                                dimensionResource(id = R.dimen.spacing_50),
+                                                0.dp,
+                                                dimensionResource(id = R.dimen.spacing_50)
+                                            )
+                                        )
+                                ) {
+                                    Text(
+                                        text = _message.message,
+                                        fontSize = 16.sp,
+                                        modifier = Modifier
+                                            .padding(dimensionResource(id = R.dimen.spacing_10dp)),
+                                        color = Color.Black
+                                    )
+                                }
+                            }
+                            Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.spacing_10dp)))
+                        } else {
+                            Row(modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.Start) {
+                                Box(
+                                    contentAlignment = Alignment.BottomStart,
+                                    modifier = Modifier
+                                        .background(
+                                            color = TextBackground,
+                                            shape = RoundedCornerShape(
+                                                dimensionResource(id = R.dimen.spacing_50),
+                                                dimensionResource(id = R.dimen.spacing_50),
+                                                0.dp,
+                                                dimensionResource(id = R.dimen.spacing_50)
+                                            )
+                                        )
+                                        .wrapContentWidth()
+                                ) {
+                                    Text(
+                                        text = _message.message,
+                                        fontSize = 16.sp,
+                                        modifier = Modifier
+                                            .padding(dimensionResource(id = R.dimen.spacing_10dp)),
+                                        color = Color.Black
+                                    )
+                                }
+                            }
+                            Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.spacing_10dp)))
                         }
                     }
                 }
             }
         }
     }
+
 }
