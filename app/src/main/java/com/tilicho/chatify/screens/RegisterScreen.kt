@@ -2,11 +2,9 @@ package com.tilicho.chatify.screens
 
 import android.content.Context
 import android.widget.Toast
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -22,24 +20,20 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.MaterialTheme
-import androidx.compose.material.OutlinedButton
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.material.TextField
 import androidx.compose.material.TextFieldDefaults
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Grain
-import androidx.compose.material.icons.filled.Person
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
@@ -63,7 +57,8 @@ fun RegisterScreen(
     context: Context,
     authViewModel: AuthViewModel,
     lifecycleOwner: LifecycleOwner,
-    chatViewModel: ChatViewModel
+    chatViewModel: ChatViewModel,
+    scope: CoroutineScope
 ) {
     var name by remember {
         mutableStateOf(String())
@@ -86,9 +81,6 @@ fun RegisterScreen(
     val registeredUsers by remember {
         mutableStateOf(chatViewModel.getFriendsList)
     }
-
-
-    val scope: CoroutineScope = rememberCoroutineScope()
     Scaffold { it ->
         Column(
             modifier = Modifier
@@ -115,6 +107,7 @@ fun RegisterScreen(
                     name = it
                     isError = false
                 }
+
                 Spacer(modifier = Modifier.height(25.dp))
 
                 TitleAndEditTextField(
@@ -199,7 +192,7 @@ fun RegisterScreen(
                         .clip(shape = RoundedCornerShape(10.dp))
                         .fillMaxWidth()
                         .height(48.dp),
-                    colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xFF49E2A7))
+                    colors = ButtonDefaults.buttonColors(backgroundColor = colorResource(id = R.color.green))
                 ) {
                     Text(text = stringResource(id = R.string.register),
                         color = Color(0xffffffff),
@@ -215,13 +208,22 @@ fun RegisterScreen(
                         .padding(bottom = 20.dp), horizontalArrangement = Arrangement.Center
                 ) {
                     Text(
-                        text = stringResource(id = R.string.donot_have_account),
+                        text = stringResource(id = R.string.already_have_an_account),
                         color = Color.Black,
-                        fontSize = 12.sp
+                        fontSize = 16.sp
                     )
-                    Text(text = stringResource(id = R.string.register),
-                        color = Color(0xFF49E2A7),
-                        fontSize = 12.sp)
+                    Spacer(modifier = Modifier.width(dimensionResource(id = R.dimen.spacing_10)))
+                    Text(text = stringResource(id = R.string.login),
+                        color = colorResource(id = R.color.green),
+                        fontSize = 16.sp,
+                        modifier = Modifier.clickable {
+                            navController.navigate(Screen.SignInScreen.route) {
+                                popUpTo(Screen.RegisterScreen.route) {
+                                    inclusive = true
+                                }
+                            }
+                        }
+                    )
                 }
             }
         }
@@ -280,65 +282,6 @@ fun TitleAndEditTextField(
     }
 }
 
-@Composable
-fun CustomDivider() {
-    Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-        Box(
-            modifier = Modifier
-                .height(1.dp)
-                .background(Color(0xFF979797))
-                .weight(1f),
-
-            )
-        Spacer(modifier = Modifier.width(3.dp))
-        Text(text = "or", color = Color(0xFF979797), fontSize = 16.sp)
-        Spacer(modifier = Modifier.width(3.dp))
-        Box(
-            modifier = Modifier
-                .height(1.dp)
-                .background(Color(0xFF979797))
-                .weight(1f)
-        )
-    }
-}
-
-@Composable
-fun LoginTypes() {
-    OutlinedButton(
-        onClick = { /*TODO*/ },
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(48.dp),
-        border = BorderStroke(1.5.dp, Color(0xff8875ff)),
-        colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xff121212))
-    ) {
-        Image(
-            imageVector = Icons.Default.Person,
-            contentDescription = null,
-        )
-        Spacer(modifier = Modifier.width(10.dp))
-        Text(text = "Login with Google", color = Color(0xdeffffff), fontSize = 16.sp)
-    }
-    Spacer(modifier = Modifier.height(20.dp))
-    OutlinedButton(
-        onClick = { /*TODO*/ },
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(48.dp),
-        border = BorderStroke(1.5.dp, Color(0xff8875ff)),
-        colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xff121212))
-    ) {
-        Row {
-            Image(
-                imageVector = Icons.Default.Grain,
-                contentDescription = null,
-            )
-            Spacer(modifier = Modifier.width(10.dp))
-            Text(text = "Login with Apple", color = Color(0xdeffffff), fontSize = 16.sp)
-        }
-    }
-}
-
 fun validatePasswordFields(password: String, confirmPassword: String): String {
     return if (password.length != confirmPassword.length) {
         "Password length did not match."
@@ -348,7 +291,6 @@ fun validatePasswordFields(password: String, confirmPassword: String): String {
         ""
     }
 }
-
 
 fun isAlreadyRegistered(
     name: String,
@@ -368,6 +310,6 @@ fun isAlreadyRegistered(
     return isregistered
 }
 
-private fun isValidEmail(emailString: String): Boolean {
+fun isValidEmail(emailString: String): Boolean {
     return android.util.Patterns.EMAIL_ADDRESS.matcher(emailString).matches()
 }

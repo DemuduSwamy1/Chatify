@@ -2,6 +2,7 @@ package com.tilicho.chatify.screens
 
 import android.annotation.SuppressLint
 import android.util.Log
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -34,6 +35,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -48,6 +50,7 @@ import com.tilicho.chatify.enums.ChatTabs
 import com.tilicho.chatify.navigation.Screen
 import com.tilicho.chatify.viewmodel.AuthViewModel
 import com.tilicho.chatify.viewmodel.ChatViewModel
+import kotlinx.coroutines.CoroutineScope
 
 @SuppressLint("MutableCollectionMutableState")
 @Composable
@@ -56,6 +59,7 @@ fun ChatsScreen(
     navController: NavHostController,
     authViewModel: AuthViewModel,
     lifecycleOwner: LifecycleOwner,
+    scope: CoroutineScope
 ) {
     var setFriendDialog by remember {
         mutableStateOf(false)
@@ -92,6 +96,22 @@ fun ChatsScreen(
                 text = stringResource(id = R.string.chatify),
                 fontWeight = FontWeight.Bold,
                 fontSize = 32.sp
+            )
+            Spacer(modifier = Modifier.padding(start = 120.dp))
+            Text(
+                text = "Logout",
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Medium,
+                color = Color.Black,
+                modifier = Modifier.clickable {
+                    authViewModel.logout(scope) {
+                        navController.navigate(Screen.SignInScreen.route) {
+                            popUpTo(Screen.SplashScreen.route) {
+                                inclusive = true
+                            }
+                        }
+                    }
+                }
             )
             Spacer(modifier = Modifier.weight(1f))
             Image(imageVector = Icons.Default.Search,
@@ -151,7 +171,7 @@ fun ChatsScreen(
                     time = "10:43 AM",
                     onClickAction = {
                         chatViewModel.selectedFriend = item
-                        Log.d("messages_001", chatViewModel.getMessages(item.uid).toString())
+                        chatViewModel.getMessages(item.uid).toString()
                         navController.navigate(Screen.IndividualChatScreen.route)
                     })
             }

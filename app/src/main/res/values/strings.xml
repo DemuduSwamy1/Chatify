@@ -6,6 +6,7 @@
     <string name="status">Status</string>
     <string name="calls">Calls</string>
     <string name="register">Register</string>
+    <string name="login">Login</string>
     <string name="user_name">User Name</string>
     <string name="name_placeholder">Enter your name</string>
     <string name="email">Email</string>
@@ -13,7 +14,9 @@
     <string name="password">Password</string>
     <string name="hide_password">"• • • • • • • • • • "</string>
     <string name="confirm_password">Confirm Password</string>
-    <string name="donot_have_account">Don’t have an account?</string>
+    <string name="do_not_have_account">Don’t have an account? </string>
+    <string name="already_have_an_account">Already have an account? </string>
     <string name="my_friends_title">MY FRIENDS</string>
     <string name="text_box_placeholder">Type message here....</string>
+    <string name="empty_fields_error_message">Please fill all the fields.</string>
 </resources>

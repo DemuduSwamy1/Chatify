@@ -6,6 +6,7 @@ import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.annotation.RequiresApi
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavHostController
@@ -41,7 +42,8 @@ class MainActivity : ComponentActivity() {
                     navController = navController,
                     authViewModel = authViewModel,
                     lifecycleOwner = lifecycleOwner,
-                    chatViewModel = chatViewModel
+                    chatViewModel = chatViewModel,
+                    scope = rememberCoroutineScope()
                 )
             }
         }

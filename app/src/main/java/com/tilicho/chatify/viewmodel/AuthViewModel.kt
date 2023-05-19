@@ -8,7 +8,6 @@ import com.google.firebase.auth.FirebaseUser
 import com.tilicho.chatify.repository.AuthenticationRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.launch
 
 class AuthViewModel(application: Application) : AndroidViewModel(application) {
 
@@ -26,7 +25,7 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
             return userRegistrationStatus
         }
 
-    suspend fun register(
+    fun register(
         email: String,
         password: String,
         name: String,
@@ -34,7 +33,6 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
         scope: CoroutineScope,
         isUserRegistered: (Boolean) -> Unit
     ) {
-
         repository.registerUser(email, password, name, scope, isUserRegistered = {
             isUserRegistered(it)
         })
@@ -46,5 +44,22 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
 
     fun getUidFromPreferences(): Flow<String> {
         return repository.getUserUid()
+    }
+
+    fun login(
+        email: String,
+        password: String,
+        scope: CoroutineScope,
+        loggedIn: (Boolean) -> Unit
+    ) {
+        repository.login(email, password, scope, isUserRegistered = {
+            loggedIn(it)
+        })
+    }
+
+    fun logout(scope: CoroutineScope, loggedOut: () -> Unit) {
+        repository.logout(scope) {
+            loggedOut()
+        }
     }
 }

@@ -11,9 +11,11 @@ import androidx.navigation.compose.composable
 import com.tilicho.chatify.screens.ChatsScreen
 import com.tilicho.chatify.screens.IndividualChatScreen
 import com.tilicho.chatify.screens.RegisterScreen
+import com.tilicho.chatify.screens.SignInScreen
 import com.tilicho.chatify.screens.SplashScreen
 import com.tilicho.chatify.viewmodel.AuthViewModel
 import com.tilicho.chatify.viewmodel.ChatViewModel
+import kotlinx.coroutines.CoroutineScope
 
 @RequiresApi(Build.VERSION_CODES.Q)
 @Composable
@@ -22,7 +24,8 @@ fun SetUpNavGraph(
     navController: NavHostController,
     authViewModel: AuthViewModel,
     lifecycleOwner: LifecycleOwner,
-    chatViewModel: ChatViewModel
+    chatViewModel: ChatViewModel,
+    scope: CoroutineScope
 ) {
     NavHost(navController = navController, startDestination = Screen.SplashScreen.route) {
         composable(route = Screen.RegisterScreen.route) {
@@ -31,7 +34,8 @@ fun SetUpNavGraph(
                 context = context,
                 authViewModel = authViewModel,
                 lifecycleOwner = lifecycleOwner,
-                chatViewModel = chatViewModel
+                chatViewModel = chatViewModel,
+                scope = scope
             )
         }
         composable(route = Screen.ChatsScreen.route) {
@@ -40,6 +44,7 @@ fun SetUpNavGraph(
                 chatViewModel = chatViewModel,
                 navController = navController,
                 lifecycleOwner = lifecycleOwner,
+                scope = scope
             )
         }
         composable(route = Screen.IndividualChatScreen.route) {
@@ -54,8 +59,14 @@ fun SetUpNavGraph(
             SplashScreen(
                 context = context,
                 authViewModel = authViewModel,
-                navController = navController
+                navController = navController,
             )
+        }
+        composable(route = Screen.SignInScreen.route) {
+            SignInScreen(context = context,
+                authViewModel = authViewModel,
+                scope = scope,
+                navController = navController)
         }
     }
 }

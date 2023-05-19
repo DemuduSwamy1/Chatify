@@ -3,7 +3,6 @@ package com.tilicho.chatify.repository
 import android.app.Application
 import android.content.Context
 import android.widget.Toast
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
@@ -14,21 +13,16 @@ import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
-import com.tilicho.chatify.UserDataStore
 import com.tilicho.chatify.constants.Constants
-import com.tilicho.chatify.data.User
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import org.json.JSONObject
 
 
 class AuthenticationRepository(application: Application) {
-
-    var currentUser: MutableLiveData<User> = MutableLiveData(User())
-    private val dataStore = UserDataStore(application)
-
     object PreferenceKeys {
         val uid = stringPreferencesKey(Constants.UserAttributes.UID)
     }
@@ -121,5 +115,37 @@ class AuthenticationRepository(application: Application) {
             .map { preferences ->
                 preferences[PreferenceKeys.uid] ?: ""
             }
+    }
+
+    fun login(
+        email: String,
+        password: String,
+        scope: CoroutineScope,
+        isUserRegistered: (Boolean) -> Unit,
+    ) {
+        auth.signInWithEmailAndPassword(email, password).addOnCompleteListener { task ->
+            if (task.isSuccessful) {
+                userMutableLiveData.postValue(auth.currentUser)
+                auth.currentUser?.uid?.let {
+                    scope.launch {
+                        saveUserUid(it, isUserRegistered = {
+                            isUserRegistered(it)
+                        })
+                    }
+                }
+            } else {
+                Toast.makeText(application, task.exception?.message, Toast.LENGTH_LONG).show()
+            }
+        }
+    }
+
+    fun logout(scope: CoroutineScope, loggedOut: () -> Unit) {
+        auth.signOut()
+        scope.launch {
+            application.prefsDataStore.edit {
+                it.clear()
+                loggedOut()
+            }
+        }
     }
 }

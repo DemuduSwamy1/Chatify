@@ -1,7 +1,6 @@
 package com.tilicho.chatify.repository
 
 import android.app.Application
-import android.util.Log
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.toMutableStateList
 import androidx.lifecycle.LifecycleOwner
@@ -18,7 +17,7 @@ import com.tilicho.chatify.data.ChatData
 import com.tilicho.chatify.data.ChatPair
 import com.tilicho.chatify.data.Message
 import com.tilicho.chatify.data.User
-import java.util.UUID
+import java.util.*
 
 
 class ChatRepository(val application: Application, val lifecycleOwner: LifecycleOwner) {
@@ -30,13 +29,11 @@ class ChatRepository(val application: Application, val lifecycleOwner: Lifecycle
     var currentUser: MutableLiveData<User> = MutableLiveData(User())
     var myChatFriendsDetails: MutableLiveData<MutableList<User>> = MutableLiveData(mutableListOf())
 
-
     init {
         getFriendsListFromFirebase()
         getMyChatFriends()
         getTotalChatsFromFirebase()
     }
-
 
     private fun setCurrentUser() {
         auth = FirebaseAuth.getInstance()
@@ -66,9 +63,7 @@ class ChatRepository(val application: Application, val lifecycleOwner: Lifecycle
                 }
             }
 
-            override fun onCancelled(error: DatabaseError) {
-                /*To do*/
-            }
+            override fun onCancelled(error: DatabaseError) {}
         })
     }
 
@@ -114,7 +109,6 @@ class ChatRepository(val application: Application, val lifecycleOwner: Lifecycle
         if (createNewId) {
             writeNewChatId(selectedFriend)
         }
-
     }
 
     private fun getMyChatFriends() {
@@ -132,9 +126,7 @@ class ChatRepository(val application: Application, val lifecycleOwner: Lifecycle
                 }
             }
 
-            override fun onCancelled(error: DatabaseError) {
-                /*To Do*/
-            }
+            override fun onCancelled(error: DatabaseError) {}
         })
     }
 
@@ -172,14 +164,10 @@ class ChatRepository(val application: Application, val lifecycleOwner: Lifecycle
                 val snapshotOfData = snapshot.getValue(typeIndicator)
                 if (snapshotOfData?.values != null) {
                     chatData.value = snapshotOfData.toMutableMap()
-                    Log.d("chatData_001", chatData.value.toString())
                 }
             }
 
-            override fun onCancelled(error: DatabaseError) {
-                /* To do*/
-            }
-
+            override fun onCancelled(error: DatabaseError) {}
         })
     }
 
