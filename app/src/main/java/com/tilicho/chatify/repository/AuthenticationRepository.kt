@@ -16,7 +16,6 @@ import com.google.gson.reflect.TypeToken
 import com.tilicho.chatify.constants.Constants
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import org.json.JSONObject

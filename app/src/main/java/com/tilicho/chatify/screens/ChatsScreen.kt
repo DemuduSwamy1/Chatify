@@ -19,11 +19,20 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.Divider
+import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Text
+import androidx.compose.material.TextField
+import androidx.compose.material.TextFieldDefaults
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -32,17 +41,24 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.LifecycleOwner
+import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import com.tilicho.chatify.R
 import com.tilicho.chatify.data.User
@@ -59,7 +75,7 @@ fun ChatsScreen(
     navController: NavHostController,
     authViewModel: AuthViewModel,
     lifecycleOwner: LifecycleOwner,
-    scope: CoroutineScope
+    scope: CoroutineScope,
 ) {
     var setFriendDialog by remember {
         mutableStateOf(false)
@@ -213,8 +229,9 @@ fun SelectFriendDialog(
     dialogCallBack: (Boolean) -> Unit,
     friends: MutableList<User>,
     navController: NavHostController,
-    selectedFriend: (User) -> Unit
+    selectedFriend: (User) -> Unit,
 ) {
+    val textState = remember { mutableStateOf(TextFieldValue("")) }
     Dialog(properties = DialogProperties(
         dismissOnBackPress = true, dismissOnClickOutside = true
     ), onDismissRequest = {
@@ -234,22 +251,109 @@ fun SelectFriendDialog(
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold
             )
-            LazyColumn(modifier = Modifier.padding(20.dp), horizontalAlignment = Alignment.Start) {
-                items(friends.size) { index ->
-                    val user = friends[index]
-                    if (user.uid != chatViewModel.getCurrentUser?.value?.uid) {
-                        Box(modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable {
-                                navController.navigate(Screen.IndividualChatScreen.route)
-                                selectedFriend.invoke(user)
-                            }) {
-                            Text(text = user.name)
+
+            SearchView(state = textState)
+            ItemList(state = textState,
+                friends = friends,
+                chatViewModel = chatViewModel,
+                navController = navController,
+                selectedFriend = { user ->
+                    selectedFriend(user)
+                })
+        }
+    }
+}
+
+@Composable
+fun SearchView(state: MutableState<TextFieldValue>) {
+    Row(modifier = Modifier.padding(horizontal = dimensionResource(id = R.dimen.spacing_20))) {
+        OutlinedTextField(
+            value = state.value,
+            onValueChange = { value ->
+                state.value = value
+            },
+            modifier = Modifier
+                .fillMaxWidth(),
+            textStyle = TextStyle(color = Color.Black, fontSize = 18.sp),
+            leadingIcon = {
+                Icon(
+                    Icons.Default.Search,
+                    contentDescription = "",
+                    modifier = Modifier
+                        .padding(15.dp)
+                        .size(24.dp)
+                )
+            },
+            trailingIcon = {
+                if (state.value != TextFieldValue("")) {
+                    IconButton(
+                        onClick = {
+                            state.value =
+                                TextFieldValue("") // Remove text from TextField when you press the 'X' icon
                         }
-                        Divider(modifier = Modifier.padding(vertical = 10.dp))
+                    ) {
+                        Icon(
+                            Icons.Default.Close,
+                            contentDescription = "",
+                            modifier = Modifier
+                                .padding(15.dp)
+                                .size(24.dp)
+                        )
                     }
                 }
+            },
+            singleLine = true, // The TextFiled has rounded corners top left and right by default
+            colors = TextFieldDefaults.textFieldColors(
+                textColor = Color.Black,
+                cursorColor = Color.Black,
+                leadingIconColor = Color.Black,
+                trailingIconColor = Color.Black,
+                backgroundColor = Color.White
+            )
+        )
+    }
+}
+
+@Composable
+fun ItemList(
+    state: MutableState<TextFieldValue>,
+    friends: MutableList<User>,
+    chatViewModel: ChatViewModel,
+    navController: NavController,
+    selectedFriend: (User) -> Unit,
+) {
+    var filteredItems: MutableList<User>
+    LazyColumn(modifier = Modifier
+        .fillMaxWidth()
+        .padding(dimensionResource(id = R.dimen.spacing_50))) {
+        val searchedText = state.value.text
+        filteredItems = if (searchedText.isEmpty()) {
+            friends
+        } else {
+            val resultList = mutableListOf<User>()
+            for (item in friends) {
+                if (item.name.lowercase()
+                        .contains(searchedText.lowercase())
+                ) {
+                    resultList.add(item)
+                }
+            }
+            resultList
+        }
+        items(filteredItems.size) { filteredItem ->
+            val user = filteredItems[filteredItem]
+            if (user.uid != chatViewModel.getCurrentUser?.value?.uid) {
+                Box(modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable {
+                        navController.navigate(Screen.IndividualChatScreen.route)
+                        selectedFriend.invoke(user)
+                    }) {
+                    Text(text = user.name)
+                }
+                Divider(modifier = Modifier.padding(vertical = 10.dp))
             }
         }
     }
 }
+

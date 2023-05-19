@@ -241,8 +241,10 @@ fun TitleAndEditTextField(
     error: String = "",
     text: (String) -> Unit,
 ) {
-    Text(text = title, fontSize = 16.sp, color = Color.Black)
-    Spacer(modifier = Modifier.height(8.dp))
+    if (title.isNotEmpty()) {
+        Text(text = title, fontSize = 16.sp, color = Color.Black)
+        Spacer(modifier = Modifier.height(8.dp))
+    }
 
     var textFieldValue by remember { mutableStateOf(TextFieldValue("")) }
 
