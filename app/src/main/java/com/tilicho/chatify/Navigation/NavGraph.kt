@@ -63,10 +63,10 @@ fun SetUpNavGraph(
             )
         }
         composable(route = Screen.SignInScreen.route) {
-            SignInScreen(context = context,
-                authViewModel = authViewModel,
+            SignInScreen(authViewModel = authViewModel,
                 scope = scope,
-                navController = navController)
+                navController = navController,
+                chatViewModel = chatViewModel)
         }
     }
 }
