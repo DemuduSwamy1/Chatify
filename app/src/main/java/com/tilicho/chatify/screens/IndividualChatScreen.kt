@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Divider
@@ -29,6 +30,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Grain
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -124,6 +126,7 @@ fun IndividualChatScreen(
                             message = message
                         )
                     }
+                    chatViewModel.getMessages(chatViewModel.selectedFriend.uid)
                 }
             )
         }
@@ -145,18 +148,29 @@ fun IndividualChatScreen(
             }
             sortedMessageIds.sort()
 
+            val lazyListState = rememberLazyListState()
+            LaunchedEffect(sortedMessageIds.size) {
+                if (sortedMessageIds.isNotEmpty()) {
+                    lazyListState.animateScrollToItem(sortedMessageIds.size - 1)
+                }
+            }
+
             LazyColumn(
                 verticalArrangement = Arrangement.Bottom,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(
-                        dimensionResource(id = R.dimen.spacing_10))) {
+                        dimensionResource(id = R.dimen.spacing_10)
+                    ), state = lazyListState
+            ) {
                 items(sortedMessageIds.size) { index ->
                     val _message = sortedMessages[sortedMessageIds[index]]
                     if (sortedMessages[sortedMessageIds[index]]?.send_by == currentUser) {
                         if (_message?.message?.length!! >= 25) {
-                            Row(modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.End) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.End
+                            ) {
                                 Box(
                                     modifier = Modifier
                                         .width(dimensionResource(id = R.dimen.chat_text_cell_size))
@@ -182,8 +196,10 @@ fun IndividualChatScreen(
                             }
                             Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.spacing_10dp)))
                         } else {
-                            Row(modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.End) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.End
+                            ) {
                                 Box(
                                     modifier = Modifier
                                         .background(
@@ -211,8 +227,10 @@ fun IndividualChatScreen(
                         }
                     } else {
                         if (_message?.message?.length!! >= 25) {
-                            Row(modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.Start) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.Start
+                            ) {
                                 Box(
                                     contentAlignment = Alignment.BottomStart,
                                     modifier = Modifier
@@ -238,8 +256,10 @@ fun IndividualChatScreen(
                             }
                             Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.spacing_10dp)))
                         } else {
-                            Row(modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.Start) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.Start
+                            ) {
                                 Box(
                                     contentAlignment = Alignment.BottomStart,
                                     modifier = Modifier

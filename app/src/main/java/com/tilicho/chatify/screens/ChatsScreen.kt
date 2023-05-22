@@ -1,8 +1,6 @@
 package com.tilicho.chatify.screens
 
 import android.annotation.SuppressLint
-import android.util.Log
-import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -67,8 +65,10 @@ import com.tilicho.chatify.navigation.Screen
 import com.tilicho.chatify.viewmodel.AuthViewModel
 import com.tilicho.chatify.viewmodel.ChatViewModel
 import kotlinx.coroutines.CoroutineScope
+import java.text.SimpleDateFormat
+import java.util.Date
 
-@SuppressLint("MutableCollectionMutableState")
+@SuppressLint("MutableCollectionMutableState", "SimpleDateFormat")
 @Composable
 fun ChatsScreen(
     chatViewModel: ChatViewModel,
@@ -84,12 +84,13 @@ fun ChatsScreen(
         mutableStateOf(ChatTabs.CHATS)
     }
     var friends by remember {
-        mutableStateOf(mutableListOf<User>())
+        mutableStateOf(chatViewModel.getFriendsList?.value)
     }
     var myChatFriends by remember {
-        mutableStateOf(mutableListOf<User>())
+        mutableStateOf(chatViewModel.getMyChatFriendsDetails?.value)
     }
-    chatViewModel.getMyChatFriendsInfo?.observe(lifecycleOwner) {
+
+    chatViewModel.getMyChatFriendsDetails?.observe(lifecycleOwner) {
         myChatFriends = it
     }
 
@@ -97,7 +98,7 @@ fun ChatsScreen(
         SelectFriendDialog(
             chatViewModel = chatViewModel,
             navController = navController,
-            friends = friends,
+            friends = friends!!,
             dialogCallBack = {
                 setFriendDialog = it
             },
@@ -178,8 +179,8 @@ fun ChatsScreen(
         }
         Spacer(modifier = Modifier.height(15.dp))
         LazyColumn {
-            items(myChatFriends.size) { index ->
-                val item = myChatFriends[index]
+            items(myChatFriends?.size!!) { index ->
+                val item = myChatFriends!![index]
                 val lastMessage = chatViewModel.getLastMessage(item.uid)
                 ChatItem(image = R.drawable.ic_launcher_background,
                     name = item.name,
@@ -190,6 +191,20 @@ fun ChatsScreen(
                         chatViewModel.getMessages(item.uid).toString()
                         navController.navigate(Screen.IndividualChatScreen.route)
                     })
+                val sdf = SimpleDateFormat("HH:mm")
+                val currentTime = lastMessage?.time?.toLong()?.let { Date(it) }
+                    ?.let { sdf.format(it) }
+                if (currentTime != null) {
+                    ChatItem(image = R.drawable.ic_launcher_background,
+                        name = item.name,
+                        lastMsg = lastMessage.message,
+                        time = currentTime,
+                        onClickAction = {
+                            chatViewModel.selectedFriend = item
+                            chatViewModel.getMessages(item.uid).toString()
+                            navController.navigate(Screen.IndividualChatScreen.route)
+                        })
+                }
             }
         }
     }
@@ -267,20 +282,23 @@ fun SelectFriendDialog(
 @Composable
 fun SearchView(state: MutableState<TextFieldValue>) {
     Row(modifier = Modifier.padding(horizontal = dimensionResource(id = R.dimen.spacing_20))) {
-        OutlinedTextField(
+        TextField(
             value = state.value,
             onValueChange = { value ->
                 state.value = value
             },
-            modifier = Modifier
+            modifier = Modifier.height(45.dp).clip(shape = RoundedCornerShape(15.dp))
                 .fillMaxWidth(),
-            textStyle = TextStyle(color = Color.Black, fontSize = 18.sp),
+            textStyle = TextStyle(color = Color.Black, fontSize = 12.sp),
+            placeholder = {
+                Text(fontSize = 12.sp, text = "Search...")
+            },
             leadingIcon = {
                 Icon(
                     Icons.Default.Search,
                     contentDescription = "",
                     modifier = Modifier
-                        .padding(15.dp)
+                        .padding(12.dp)
                         .size(24.dp)
                 )
             },
@@ -290,13 +308,12 @@ fun SearchView(state: MutableState<TextFieldValue>) {
                         onClick = {
                             state.value =
                                 TextFieldValue("") // Remove text from TextField when you press the 'X' icon
-                        }
-                    ) {
+                        }){
                         Icon(
                             Icons.Default.Close,
                             contentDescription = "",
                             modifier = Modifier
-                                .padding(15.dp)
+                                .padding(12.dp)
                                 .size(24.dp)
                         )
                     }
@@ -308,7 +325,9 @@ fun SearchView(state: MutableState<TextFieldValue>) {
                 cursorColor = Color.Black,
                 leadingIconColor = Color.Black,
                 trailingIconColor = Color.Black,
-                backgroundColor = Color.White
+                backgroundColor = Color(0xffeaede8),
+                focusedIndicatorColor = Color.Transparent,
+                unfocusedIndicatorColor = Color.Transparent
             )
         )
     }
@@ -332,12 +351,12 @@ fun ItemList(
         } else {
             val resultList = mutableListOf<User>()
             for (item in friends) {
-                if (item.name.lowercase()
-                        .contains(searchedText.lowercase())
-                ) {
-                    resultList.add(item)
+                    if (item.name.lowercase()
+                            .contains(searchedText.lowercase())
+                    ) {
+                        resultList.add(item)
+                    }
                 }
-            }
             resultList
         }
         items(filteredItems.size) { filteredItem ->

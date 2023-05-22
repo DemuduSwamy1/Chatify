@@ -36,12 +36,12 @@ class ChatViewModel(lifecycleOwner: LifecycleOwner?, application: Application) :
             return repository?.registeredFriends
         }
 
-    val getMyChatFriendsInfo: MutableLiveData<MutableList<User>>?
+    val getMyChatFriendsDetails: MutableLiveData<MutableList<User>>?
         get() {
             return repository?.myChatFriendsDetails
         }
 
-    private val getTotalChats: MutableMap<String, ChatData>?
+    val getTotalChats: MutableMap<String, ChatData>?
         get() {
             return repository?.chatData?.value
         }
@@ -65,6 +65,4 @@ class ChatViewModel(lifecycleOwner: LifecycleOwner?, application: Application) :
     fun getLastMessage(uid: String): Message? {
         return repository?.getLastMessage(uid)
     }
-
-
 }
