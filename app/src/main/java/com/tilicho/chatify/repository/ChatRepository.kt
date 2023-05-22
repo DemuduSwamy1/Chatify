@@ -1,6 +1,5 @@
 package com.tilicho.chatify.repository
 
-import android.app.Application
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.toMutableStateList
 import androidx.lifecycle.LifecycleOwner
@@ -20,7 +19,7 @@ import com.tilicho.chatify.data.User
 import java.util.*
 
 
-class ChatRepository(val application: Application, val lifecycleOwner: LifecycleOwner) {
+class ChatRepository(val lifecycleOwner: LifecycleOwner) {
     private lateinit var auth: FirebaseAuth
     private val firebaseDatabase: DatabaseReference = FirebaseDatabase.getInstance().reference
     var registeredFriends: MutableLiveData<MutableList<User>> = MutableLiveData(mutableListOf())
@@ -29,26 +28,20 @@ class ChatRepository(val application: Application, val lifecycleOwner: Lifecycle
     var currentUser: MutableLiveData<User> = MutableLiveData(User())
     var myChatFriendsDetails: MutableLiveData<MutableList<User>> = MutableLiveData(mutableListOf())
 
-    init {
-        getFriendsListFromFirebase()
-        getMyChatFriends()
-        getTotalChatsFromFirebase()
-    }
-
     private fun setCurrentUser() {
         auth = FirebaseAuth.getInstance()
-        var tempRegisterdFriends: MutableList<User> = mutableListOf()
+        var tempRegisteredFriends: MutableList<User> = mutableListOf()
         registeredFriends.observe(lifecycleOwner) {
-            tempRegisterdFriends = it
+            tempRegisteredFriends = it
         }
-        tempRegisterdFriends.forEach { user ->
+        tempRegisteredFriends.forEach { user ->
             if (user.uid == auth.uid) {
                 currentUser.postValue(user)
             }
         }
     }
 
-    private fun getFriendsListFromFirebase() {
+    fun getFriendsListFromFirebase() {
         val databaseReference =
             firebaseDatabase.child(Constants.UserAttributes.USERS)
         databaseReference.addValueEventListener(object : ValueEventListener {
@@ -111,7 +104,7 @@ class ChatRepository(val application: Application, val lifecycleOwner: Lifecycle
         }
     }
 
-    private fun getMyChatFriends() {
+    fun getMyChatFriends() {
         auth = FirebaseAuth.getInstance()
         val databaseReference = firebaseDatabase.child(Constants.UserAttributes.USERS)
             .child(auth.currentUser?.uid.toString()).child(Constants.UserAttributes.CHATS)
@@ -154,7 +147,7 @@ class ChatRepository(val application: Application, val lifecycleOwner: Lifecycle
         }
     }
 
-    private fun getTotalChatsFromFirebase() {
+    fun getTotalChatsFromFirebase() {
         auth = FirebaseAuth.getInstance()
         val databaseReference = firebaseDatabase.child(Constants.UserAttributes.CHATS)
         databaseReference.addValueEventListener(object : ValueEventListener {

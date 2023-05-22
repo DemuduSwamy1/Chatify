@@ -15,7 +15,7 @@ class ChatViewModel(lifecycleOwner: LifecycleOwner?, application: Application) :
     var selectedFriend = User()
 
     private val repository: ChatRepository? =
-        lifecycleOwner?.let { ChatRepository(application = application, lifecycleOwner = it) }
+        lifecycleOwner?.let { ChatRepository(lifecycleOwner = it) }
 
     private var currentUser = repository?.currentUser
 
@@ -66,5 +66,16 @@ class ChatViewModel(lifecycleOwner: LifecycleOwner?, application: Application) :
         return repository?.getLastMessage(uid)
     }
 
+    fun initViewModel() {
+        repository?.getFriendsListFromFirebase()
+        repository?.getMyChatFriends()
+        repository?.getTotalChatsFromFirebase()
+    }
 
+    fun clear() {
+        repository?.chatData?.value = mutableMapOf()
+        repository?.myChatIds?.value = mutableListOf()
+        repository?.registeredFriends?.value = mutableListOf()
+        repository?.myChatFriendsDetails?.value = mutableListOf()
+    }
 }

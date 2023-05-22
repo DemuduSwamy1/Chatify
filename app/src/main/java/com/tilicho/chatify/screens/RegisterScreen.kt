@@ -174,6 +174,7 @@ fun RegisterScreen(
                                         name,
                                         lifecycleOwner,
                                         scope, isUserRegistered = {
+                                            chatViewModel.initViewModel()
                                             navController.navigate(Screen.ChatsScreen.route) {
                                                 popUpTo(Screen.RegisterScreen.route) {
                                                     inclusive = true

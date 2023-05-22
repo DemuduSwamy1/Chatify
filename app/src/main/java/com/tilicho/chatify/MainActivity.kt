@@ -36,6 +36,7 @@ class MainActivity : ComponentActivity() {
                 val lifecycleOwner = LocalLifecycleOwner.current
                 chatViewModel =
                     ChatViewModel(application = application, lifecycleOwner = lifecycleOwner)
+                chatViewModel.initViewModel()
                 navController = rememberNavController()
                 SetUpNavGraph(
                     context = this@MainActivity,

@@ -1,6 +1,5 @@
 package com.tilicho.chatify.screens
 
-import android.content.Context
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -32,14 +31,15 @@ import androidx.navigation.NavController
 import com.tilicho.chatify.R
 import com.tilicho.chatify.navigation.Screen
 import com.tilicho.chatify.viewmodel.AuthViewModel
+import com.tilicho.chatify.viewmodel.ChatViewModel
 import kotlinx.coroutines.CoroutineScope
 
 @Composable
 fun SignInScreen(
-    context: Context,
     authViewModel: AuthViewModel,
     scope: CoroutineScope,
     navController: NavController,
+    chatViewModel: ChatViewModel
 ) {
     var userName by remember {
         mutableStateOf(String())
@@ -102,6 +102,7 @@ fun SignInScreen(
                                 scope = scope,
                                 loggedIn = { loggedIn ->
                                     if (loggedIn) {
+                                        chatViewModel.initViewModel()
                                         navController.navigate(Screen.ChatsScreen.route) {
                                             popUpTo(Screen.SignInScreen.route) {
                                                 inclusive = true
