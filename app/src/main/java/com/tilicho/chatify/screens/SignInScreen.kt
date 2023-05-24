@@ -33,6 +33,7 @@ import com.tilicho.chatify.navigation.Screen
 import com.tilicho.chatify.viewmodel.AuthViewModel
 import com.tilicho.chatify.viewmodel.ChatViewModel
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.runBlocking
 
 @Composable
 fun SignInScreen(
@@ -102,7 +103,9 @@ fun SignInScreen(
                                 scope = scope,
                                 loggedIn = { loggedIn ->
                                     if (loggedIn) {
-                                        chatViewModel.initViewModel()
+                                        runBlocking {
+                                            chatViewModel.addValueEventListeners()
+                                        }
                                         navController.navigate(Screen.ChatsScreen.route) {
                                             popUpTo(Screen.SignInScreen.route) {
                                                 inclusive = true

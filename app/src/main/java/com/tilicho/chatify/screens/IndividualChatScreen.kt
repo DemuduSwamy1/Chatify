@@ -68,7 +68,7 @@ fun IndividualChatScreen(
         mutableStateOf(Message())
     }
     val currentUser by remember {
-        mutableStateOf(chatViewModel.getCurrentUser?.value?.uid)
+        mutableStateOf(chatViewModel.currentUser.value?.uid)
     }
     val messages by remember {
         mutableStateOf(chatViewModel.messages.value)
@@ -118,7 +118,7 @@ fun IndividualChatScreen(
                     if (text.isNotEmpty()) {
                         message = Message(
                             message = text.trim(),
-                            send_by = chatViewModel.getCurrentUser?.value?.uid.toString(),
+                            send_by = chatViewModel.currentUser.value?.uid.toString(),
                             time = System.currentTimeMillis().toString()
                         )
                         chatViewModel.addMsgToChatId(

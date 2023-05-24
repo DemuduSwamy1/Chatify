@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -20,7 +21,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Divider
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
-import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Text
 import androidx.compose.material.TextField
 import androidx.compose.material.TextFieldDefaults
@@ -34,6 +34,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -44,7 +45,6 @@ import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
@@ -59,8 +59,9 @@ import com.tilicho.chatify.navigation.Screen
 import com.tilicho.chatify.viewmodel.AuthViewModel
 import com.tilicho.chatify.viewmodel.ChatViewModel
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.runBlocking
 import java.text.SimpleDateFormat
-import java.util.Date
+import java.util.*
 
 @SuppressLint("MutableCollectionMutableState", "SimpleDateFormat")
 @Composable
@@ -71,20 +72,26 @@ fun ChatsScreen(
     lifecycleOwner: LifecycleOwner,
     scope: CoroutineScope,
 ) {
+    var friends by remember {
+        mutableStateOf(mutableListOf<User>())
+    }
+    var myChatFriends by remember {
+        mutableStateOf(mutableListOf<User>())
+    }
+    chatViewModel.registeredFriends.observe(lifecycleOwner) {
+        friends = it
+    }
+    chatViewModel.myChatFriendsDetails.observe(lifecycleOwner) {
+        myChatFriends = it
+    }
     var setFriendDialog by remember {
         mutableStateOf(false)
     }
     var selected by remember {
         mutableStateOf(ChatTabs.CHATS)
     }
-    var friends by remember {
-        mutableStateOf(chatViewModel.getFriendsList?.value)
-    }
-    var myChatFriends by remember {
-        mutableStateOf(chatViewModel.getMyChatFriendsDetails?.value)
-    }
 
-    chatViewModel.getMyChatFriendsDetails?.observe(lifecycleOwner) {
+    chatViewModel.myChatFriendsDetails.observe(lifecycleOwner) {
         myChatFriends = it
     }
 
@@ -92,7 +99,8 @@ fun ChatsScreen(
         SelectFriendDialog(
             chatViewModel = chatViewModel,
             navController = navController,
-            friends = friends!!,
+            friends = friends,
+            lifecycleOwner = lifecycleOwner,
             dialogCallBack = {
                 setFriendDialog = it
             },
@@ -132,7 +140,7 @@ fun ChatsScreen(
                     .size(30.dp)
                     .clickable {
                         setFriendDialog = true
-                        chatViewModel.getFriendsList?.observe(lifecycleOwner) {
+                        chatViewModel.registeredFriends.observe(lifecycleOwner) {
                             friends = it
                         }
                     })
@@ -174,32 +182,21 @@ fun ChatsScreen(
         }
         Spacer(modifier = Modifier.height(15.dp))
         LazyColumn {
-            items(myChatFriends?.size!!) { index ->
-                val item = myChatFriends!![index]
+            items(myChatFriends.size) { index ->
+                val item = myChatFriends[index]
                 val lastMessage = chatViewModel.getLastMessage(item.uid)
+                val sdf = SimpleDateFormat("HH:mm")
+                val currentTime = lastMessage.time.toLong().let { Date(it) }
+                    .let { sdf.format(it) }
                 ChatItem(image = R.drawable.ic_launcher_background,
                     name = item.name,
-                    lastMsg = lastMessage?.message.toString(),
-                    time = "10:43 AM",
+                    lastMsg = lastMessage.message,
+                    time = currentTime,
                     onClickAction = {
                         chatViewModel.selectedFriend = item
-                        chatViewModel.getMessages(item.uid).toString()
+                        chatViewModel.getMessages(item.uid)
                         navController.navigate(Screen.IndividualChatScreen.route)
                     })
-                val sdf = SimpleDateFormat("HH:mm")
-                val currentTime = lastMessage?.time?.toLong()?.let { Date(it) }
-                    ?.let { sdf.format(it) }
-                if (currentTime != null) {
-                    ChatItem(image = R.drawable.ic_launcher_background,
-                        name = item.name,
-                        lastMsg = lastMessage.message,
-                        time = currentTime,
-                        onClickAction = {
-                            chatViewModel.selectedFriend = item
-                            chatViewModel.getMessages(item.uid).toString()
-                            navController.navigate(Screen.IndividualChatScreen.route)
-                        })
-                }
             }
         }
     }
@@ -233,40 +230,53 @@ fun ChatItem(onClickAction: () -> Unit, image: Int, name: String, lastMsg: Strin
     Divider()
 }
 
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun SelectFriendDialog(
     chatViewModel: ChatViewModel,
     dialogCallBack: (Boolean) -> Unit,
     friends: MutableList<User>,
     navController: NavHostController,
+    lifecycleOwner: LifecycleOwner,
     selectedFriend: (User) -> Unit,
 ) {
     val textState = remember { mutableStateOf(TextFieldValue("")) }
     Dialog(properties = DialogProperties(
-        dismissOnBackPress = true, dismissOnClickOutside = true
+        dismissOnBackPress = true, dismissOnClickOutside = true, usePlatformDefaultWidth = false
     ), onDismissRequest = {
         dialogCallBack(false)
     }) {
         Column(
-            modifier = Modifier
+            modifier = Modifier.fillMaxSize()
                 .clip(shape = RoundedCornerShape(12.dp))
-                .size(width = 300.dp, height = 500.dp)
-                .background(color = Color.White),
-            horizontalAlignment = Alignment.CenterHorizontally
+                .background(color = Color.White)
         ) {
-            Text(
-                modifier = Modifier.padding(10.dp),
-                textAlign = TextAlign.Center,
-                text = stringResource(id = R.string.my_friends_title),
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Bold
-            )
+            Row() {
+                Text(
+                    modifier = Modifier.padding(10.dp),
+                    text = stringResource(id = R.string.my_friends_title),
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold
+                )
+                Spacer(modifier = Modifier.weight(1f))
+                Icon(
+                    Icons.Default.Close,
+                    contentDescription = "",
+                    modifier = Modifier
+                        .clickable {
+                            dialogCallBack.invoke(false)
+                        }
+                        .padding(12.dp)
+                        .size(24.dp)
+                )
+            }
 
             SearchView(state = textState)
             ItemList(state = textState,
                 friends = friends,
                 chatViewModel = chatViewModel,
                 navController = navController,
+                lifecycleOwner = lifecycleOwner,
                 selectedFriend = { user ->
                     selectedFriend(user)
                 })
@@ -282,7 +292,9 @@ fun SearchView(state: MutableState<TextFieldValue>) {
             onValueChange = { value ->
                 state.value = value
             },
-            modifier = Modifier.height(45.dp).clip(shape = RoundedCornerShape(15.dp))
+            modifier = Modifier
+                .height(45.dp)
+                .clip(shape = RoundedCornerShape(15.dp))
                 .fillMaxWidth(),
             textStyle = TextStyle(color = Color.Black, fontSize = 12.sp),
             placeholder = {
@@ -334,6 +346,7 @@ fun ItemList(
     friends: MutableList<User>,
     chatViewModel: ChatViewModel,
     navController: NavController,
+    lifecycleOwner: LifecycleOwner,
     selectedFriend: (User) -> Unit,
 ) {
     var filteredItems: MutableList<User>
@@ -356,7 +369,13 @@ fun ItemList(
         }
         items(filteredItems.size) { filteredItem ->
             val user = filteredItems[filteredItem]
-            if (user.uid != chatViewModel.getCurrentUser?.value?.uid) {
+            var uid = ""
+            runBlocking {
+                chatViewModel.currentUser.observe(lifecycleOwner) {
+                    uid = it.uid
+                }
+            }
+            if (user.uid != uid) {
                 Box(modifier = Modifier
                     .fillMaxWidth()
                     .clickable {

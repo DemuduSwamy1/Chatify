@@ -41,7 +41,7 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.LiveData
 import androidx.navigation.NavController
 import com.tilicho.chatify.R
 import com.tilicho.chatify.data.User
@@ -79,7 +79,7 @@ fun RegisterScreen(
         mutableStateOf(String())
     }
     val registeredUsers by remember {
-        mutableStateOf(chatViewModel.getFriendsList)
+        mutableStateOf(chatViewModel.registeredFriends)
     }
     Scaffold { it ->
         Column(
@@ -174,7 +174,9 @@ fun RegisterScreen(
                                         name,
                                         lifecycleOwner,
                                         scope, isUserRegistered = {
-                                            chatViewModel.initViewModel()
+                                            runBlocking {
+                                                chatViewModel.addValueEventListeners()
+                                            }
                                             navController.navigate(Screen.ChatsScreen.route) {
                                                 popUpTo(Screen.RegisterScreen.route) {
                                                     inclusive = true
@@ -298,7 +300,7 @@ fun validatePasswordFields(password: String, confirmPassword: String): String {
 fun isAlreadyRegistered(
     name: String,
     lifecycleOwner: LifecycleOwner,
-    registeredUsers: MutableLiveData<MutableList<User>>?
+    registeredUsers: LiveData<MutableList<User>>?
 ): Boolean {
     var isregistered = false
     var friends = mutableListOf<User>()
